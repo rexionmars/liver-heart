@@ -1,62 +1,77 @@
 import cv2
 import time
 import pytesseract
+from pytesseract import Output
+from common import *
 
-path = "../media_train/img/7.png"
-setting = '--oem 2 --psm 6 outputbase digits'
+path = "../media_train/img/8.png"
 
 img = cv2.imread(path)
 img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
+def letter_bounding():
+    height, width, _ = img.shape
+    letter_boxes = pytesseract.image_to_boxes(img)
+    print(letter_boxes)
+
+    for box in letter_boxes.splitlines():
+        box = box.split()
+        print(box)
+        x,y,w,h = int(box[1]),int(box[2]),int(box[3]),int(box[4])
+        cv2.rectangle(img,(x,height-y),(w,height-h), (0,0,255),1)
+        #cv2.putText(COMMON_PUTTEXT)
+
+
 def detect_characters():
-    height_img, width_img, _ = img.shape
-    boxes = pytesseract.image_to_boxes(img, config=setting)
+    height, width, _ = img.shape
+    boxes = pytesseract.image_to_boxes(img, config=TESSERACT_CONFIG)
 
-    for box_ch in boxes.splitlines():
-        box_ch = box_ch.split(' ')
-        print(box_ch)
-        x, y, w, h = int(box_ch[1]), int(box_ch[2]), int(box_ch[3]), int(box_ch[4])
-        cv2.rectangle(img, (x, height_img - y), (w, height_img - h), (36, 197, 255), 1)
-        cv2.putText(img, box_ch[0], (x, height_img + 25), cv2.FONT_HERSHEY_COMPLEX, 1, (36, 197, 255), 1)
+    for box_character in boxes.splitlines():
+        box_character = box_character.split(' ')
+        print(box_character)
 
-    cv2.imshow('Show', img)
+        x, y, w, h = int(box_character[1]), int(box_character[2]), int(box_character[3]), int(box_character[4])
+        cv2.rectangle(img, (x, height - y), (w, height - h), (36, 197, 255), 1)
+        cv2.putText(img, box_character[0], (x, height + 25), cv2.FONT_HERSHEY_COMPLEX, 1, (36, 197, 255), 1)
+
 
 def detect_words():
-    height_img, width_img, _ = img.shape
+    height, width, _ = img.shape
     boxes = pytesseract.image_to_data(img)
-    #print(boxes)
+    print(boxes)
 
-    for x, box_ch in enumerate(boxes.splitlines()):
+    for x, box_character in enumerate(boxes.splitlines()):
         if x != 0:
-            box_ch = box_ch.split()
-            print(box_ch)
+            box_character = box_character.split()
+            print(box_character)
 
-            if len(box_ch) == 12:
-                x, y, w, h = int(box_ch[6]), int(box_ch[7]), int(box_ch[8]), int(box_ch[9])
+            if len(box_character) == 12:
+                x, y, w, h = int(box_character[6]), int(box_character[7]), int(box_character[8]), int(box_character[9])
                 cv2.rectangle(img, (x,y), (w+x, h+y), (36, 197, 255), 1)
-                cv2.putText(img, box_ch[11], (x, y), cv2.FONT_HERSHEY_COMPLEX, 0.5, (36, 197, 255), 1)
+                cv2.putText(img, box_character[11], (x, y), cv2.FONT_HERSHEY_COMPLEX, 0.5, (36, 197, 255), 1)
 
-    cv2.imshow('Show', img)
 
 def detect_only_digit():
-    height_img, width_img, _ = img.shape
-    boxes = pytesseract.image_to_data(img, config=setting)
-    #print(boxes)
+    height, width, _ = img.shape
+    boxes = pytesseract.image_to_data(img, config=TESSERACT_CONFIG)
+    print(boxes)
 
-    for x, box_ch in enumerate(boxes.splitlines()):
+    for x, box_character in enumerate(boxes.splitlines()):
         if x != 0:
-            box_ch = box_ch.split()
-            print(box_ch)
+            box_character = box_character.split()
+            print(box_character)
 
-            if len(box_ch) == 12:
-                x, y, w, h = int(box_ch[6]), int(box_ch[7]), int(box_ch[8]), int(box_ch[9])
+            if len(box_character) == 12:
+                x, y, w, h = int(box_character[6]), int(box_character[7]), int(box_character[8]), int(box_character[9])
                 cv2.rectangle(img, (x,y), (w+x, h+y), (36, 197, 255), 1)
-                cv2.putText(img, box_ch[11], (x, y), cv2.FONT_HERSHEY_COMPLEX, 0.5, (36, 197, 255), 1)
+                cv2.putText(img, box_character[11], (x, y), cv2.FONT_HERSHEY_COMPLEX, 0.5, (36, 197, 255), 1)
 
-    cv2.imshow('Show', img)
 
-detect_characters()
+detect_only_digit()
 
+cv2.imshow('Show', img)
+
+# Use this block code only your use an Window Manager, example: i3wm, hyprland, bspwm
 while True:
     key = cv2.waitKey(0)
 
