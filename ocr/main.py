@@ -2,7 +2,9 @@ import cv2
 import time
 import pytesseract
 from pytesseract import Output
-from common import *
+
+
+from config.ts import TESSERACT_CONFIG
 
 path = "../media_train/img/8.png"
 
