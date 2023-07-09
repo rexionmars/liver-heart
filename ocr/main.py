@@ -9,7 +9,7 @@ from config.ts import TESSERACT_CONFIG
 path = "../media_train/img/8.png"
 
 img = cv2.imread(path)
-img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+#img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
 def letter_bounding():
     height, width, _ = img.shape
@@ -22,6 +22,19 @@ def letter_bounding():
         x,y,w,h = int(box[1]),int(box[2]),int(box[3]),int(box[4])
         cv2.rectangle(img,(x,height-y),(w,height-h), (0,0,255),1)
         #cv2.putText(COMMON_PUTTEXT)
+
+def filter_words():
+    image_data = pytesseract.image_to_data(img, output_type=Output.DICT)
+
+    for word in image_data['text']:
+        print(word)
+
+    for i, word in enumerate(image_data['text']):
+        if word != '':
+            x,y,w,h = image_data['left'][i],image_data['top'][i],image_data['width'][i],image_data['height'][i]
+            cv2.rectangle(img,(x,y),(x+w,y+h),(0,255,0),1)
+            cv2.putText(img,word,(x,y+20),cv2.FONT_HERSHEY_COMPLEX,0.2,(0,120,255),1)
+
 
 
 def detect_characters():
@@ -55,7 +68,7 @@ def detect_words():
 
 def detect_only_digit():
     height, width, _ = img.shape
-    boxes = pytesseract.image_to_data(img, config=TESSERACT_CONFIG)
+    boxes = pytesseract.image_to_data(img)
     print(boxes)
 
     for x, box_character in enumerate(boxes.splitlines()):
@@ -69,17 +82,12 @@ def detect_only_digit():
                 cv2.putText(img, box_character[11], (x, y), cv2.FONT_HERSHEY_COMPLEX, 0.5, (36, 197, 255), 1)
 
 
-detect_only_digit()
+bind_words()
 
-cv2.imshow('Show', img)
 
 # Use this block code only your use an Window Manager, example: i3wm, hyprland, bspwm
 while True:
-    key = cv2.waitKey(0)
-
-    if key == 27:
+    cv2.imshow('Show', img)
+    if cv2.waitKey(2) & 0xFF == ord('q'):
         break
-    if key != -1:
-        continue
-
-cv2.destroyAllWindows()
+    cv2.destroyAllWindows()
