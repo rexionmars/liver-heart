@@ -1,4 +1,11 @@
-<img src="thumbnail-git/1.png" alt="Snake logo">
+## OCR Basic Archtecture
+<img src="thumbnail-git/ocr.png" alt="Snake logo">
+
+## Basic Multithread Archtecture
+<img src="thumbnail-git/arch.png" alt="Snake logo">
+
+## Basic Archtecture API
+<img src="thumbnail-git/api.png" alt="Snake logo">
 This will be updated soon<br>
 
 ## Main characteristics
