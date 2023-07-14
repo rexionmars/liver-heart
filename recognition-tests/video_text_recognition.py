@@ -3,7 +3,7 @@ import numpy as np
 import pytesseract
 from pytesseract import Output
 
-from config.ts import *
+from config.general import *
 
 path = "../media_train/m4/4.mp4"
 
@@ -20,7 +20,7 @@ def main():
 
         # Control the frame rate
         contr += 1
-        if contr % 40 == 0:
+        if contr % 30 == 0:
             imgH, imgW, _ = frame.shape
             x1, y1, w1, h1 = 0, 0, imgH, imgW
 
