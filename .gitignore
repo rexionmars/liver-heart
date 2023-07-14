@@ -1,2 +1,2 @@
-media_train/*
-ocr/config/__pycache__
+media-test/*
+recognition-tests/config/__pycache__
