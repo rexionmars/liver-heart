@@ -1,3 +1,7 @@
+<div align=center>
+  <h1 align=center>LIVE HEART</h1>
+  <p align=center>Real-time embedded software for optical character recognition on hospital monitors</p>
+</div>
 <img src="thumbnail-git/logo.jpg" alt="Snake logo">
 <!--
 ## OCR Basic Archtecture
