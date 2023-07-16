@@ -1,3 +1,5 @@
+<img src="thumbnail-git/logo.jpg" alt="Snake logo">
+<!--
 ## OCR Basic Archtecture
 <img src="thumbnail-git/ocr.png" alt="Snake logo">
 
@@ -6,6 +8,7 @@
 
 ## Basic Archtecture API
 <img src="thumbnail-git/api.png" alt="Snake logo">
+-->
 This will be updated soon<br>
 
 ## Main characteristics
