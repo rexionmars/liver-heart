@@ -11,6 +11,7 @@ import numpy
 import pytesseract
 
 import Linguist
+import config
 
 
 def tesseract_location(root):
@@ -18,7 +19,7 @@ def tesseract_location(root):
     Sets the tesseract cmd root and exits is the root is not set correctly
 
     Tesseract needs a pointer to exec program included in the install.
-    Example: User/Documents/tesseract/4.1.1/bin/tesseract
+    Example: /usr/bin/tesseract
     See tesseract documentation for help.
     """
     try:
@@ -119,6 +120,7 @@ class VideoStream:
         """
         width = self.stream.get(cv2.CAP_PROP_FRAME_WIDTH)
         height = self.stream.get(cv2.CAP_PROP_FRAME_HEIGHT)
+        print("Video resolution:\nW: {} x H: {}".format(int(width), int(height)))
         return int(width), int(height)
 
     def stop_process(self):
@@ -202,7 +204,6 @@ class OCR:
                 # # # CUSTOM FRAME PRE-PROCESSING GOES HERE # # #
                 frame = cv2.cvtColor(frame, cv2.COLOR_RGB2GRAY)
                 #frame = cv2.adaptiveThreshold(frame, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, 2)
-                # # # # # # # # # # # # # # # # # # # #
 
                 frame = frame[self.crop_height:(self.height - self.crop_height),
                               self.crop_width:(self.width - self.crop_width)]
@@ -256,7 +257,7 @@ def views(mode: int, confidence: int):
     """
     View modes changes the style of text-boxing in OCR.
 
-    View mode 1: Draws boxes on text with >75 confidence level
+    View mode 1: Draws boxes on text with > 75 confidence level
 
     View mode 2: Draws red boxes on low-confidence text and green on high-confidence text
 
@@ -348,8 +349,10 @@ def put_crop_box(frame: numpy.ndarray, width: int, height: int, crop_width: int,
 
     :return: CV2 display frame with crop box added
     """
+
+    # Center screen rectngle
     cv2.rectangle(frame, (crop_width, crop_height), (width - crop_width, height - crop_height),
-                  (255, 0, 0), thickness=1)
+                  (52, 187, 255), thickness=1)
     return frame
 
 
@@ -380,7 +383,7 @@ def put_language(frame: numpy.ndarray, language_string: str) -> numpy.ndarray:
     :returns: CV2 display frame with language name added
     """
     cv2.putText(frame, language_string,
-                (10, 65), cv2.FONT_HERSHEY_DUPLEX, 1.0, (255, 255, 255))
+                (10, 65), cv2.FONT_HERSHEY_SIMPLEX, 0.5, config.FONT_COLOR)
     return frame
 
 
@@ -445,18 +448,17 @@ def ocr_stream(crop: list[int, int], source: int = 0, view_mode: int = 1, langua
 
         frame = video_stream.frame  # Grabs the most recent frame read by the VideoStream class
 
-        # # # All display frame additions go here # # # CUSTOMIZABLE
+        # All display frame additions go here # # # CUSTOMIZABLE
         frame = put_rate(frame, cps1.rate())
         frame = put_language(frame, lang_name)
         frame = put_crop_box(frame, img_wi, img_hi, cropx, cropy)
         frame, text = put_ocr_boxes(ocr.boxes, frame, img_hi,
                                     crop_width=cropx, crop_height=cropy, view_mode=view_mode)
-        # # # # # # # # # # # # # # # # # # # # # # # #
 
         # Photo capture:
         if pressed_key == ord('c'):
             print('\n' + text)
             captures = capture_image(frame, captures)
 
-        cv2.imshow("realtime OCR", frame)
+        cv2.imshow("Live Heart OCR", frame)
         cps1.increment()  # Incrementation for rate counter
