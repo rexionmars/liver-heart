@@ -1,2 +1,3 @@
 media-test/*
 recognition-tests/config/__pycache__
+server/drogon-tests/build/
