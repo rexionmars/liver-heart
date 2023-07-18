@@ -11,7 +11,7 @@ import numpy
 import pytesseract
 
 import Linguist
-import config
+from config import *
 
 
 def tesseract_location(root):
@@ -120,7 +120,8 @@ class VideoStream:
         """
         width = self.stream.get(cv2.CAP_PROP_FRAME_WIDTH)
         height = self.stream.get(cv2.CAP_PROP_FRAME_HEIGHT)
-        print("Video resolution:\nW: {} x H: {}".format(int(width), int(height)))
+        print("Video resolution:")
+        print("W: {} x H: {}".format(int(width), int(height)))
         return int(width), int(height)
 
     def stop_process(self):
@@ -332,7 +333,8 @@ def put_ocr_boxes(boxes, frame, height, crop_width=0, crop_height=0, view_mode=1
                         text = text + ' ' + word
 
         if text.isascii():  # CV2 is only able to display ascii chars at the moment
-            cv2.putText(frame, text, (5, height - 5), cv2.FONT_HERSHEY_DUPLEX, 1, (200, 200, 200))
+            cv2.putText(frame, text, (5, height - 5), cv2.FONT_HERSHEY_DUPLEX, 1, COLOR_RED)
+            print(text)
 
     return frame, text
 
@@ -352,7 +354,7 @@ def put_crop_box(frame: numpy.ndarray, width: int, height: int, crop_width: int,
 
     # Center screen rectngle
     cv2.rectangle(frame, (crop_width, crop_height), (width - crop_width, height - crop_height),
-                  (52, 187, 255), thickness=1)
+                  COLOR_ORANGE, thickness=1)
     return frame
 
 
@@ -367,9 +369,25 @@ def put_rate(frame: numpy.ndarray, rate: float) -> numpy.ndarray:
 
     :return: CV2 display frame with rate added
     """
+    cv2.putText(frame, "{} ".format(int(rate)),
+                (10, 75), cv2.FONT_HERSHEY_PLAIN, 1.5, COLOR_GREEN, 2)
+    cv2.putText(frame, "Iters/s".format(int(rate)),
+                (60, 75), cv2.FONT_HERSHEY_SIMPLEX, 0.5, COLOR_GREEN, 1)
+    print("{} Iterations/Second".format(int(rate)))
+    return frame
 
-    cv2.putText(frame, "{} Iterations/Second".format(int(rate)),
-                (10, 35), cv2.FONT_HERSHEY_DUPLEX, 1.0, (255, 255, 255))
+def put_informations(frame: numpy.ndarray) -> numpy.ndarray:
+    """
+    Place text showing the informations from the Liver Heart project
+
+    :param frame: CV2 display informations for text destination
+
+    :return: CV2 display frame with informations added
+    """
+    cv2.putText(frame, "Live Heart OCR", (10, 25), cv2.FONT_HERSHEY_DUPLEX, 1.0, COLOR_RED, 2)
+    cv2.putText(frame, "Email: opensource.leonardi@gmail.com", (10, 47), cv2.FONT_HERSHEY_SIMPLEX, 0.7, COLOR_PURPLE, 1)
+    cv2.putText(frame, "github.com/rexionmars", (10, 115), cv2.FONT_HERSHEY_SIMPLEX, 0.5, COLOR_RED)
+
     return frame
 
 
@@ -382,8 +400,9 @@ def put_language(frame: numpy.ndarray, language_string: str) -> numpy.ndarray:
 
     :returns: CV2 display frame with language name added
     """
-    cv2.putText(frame, language_string,
-                (10, 65), cv2.FONT_HERSHEY_SIMPLEX, 0.5, config.FONT_COLOR)
+    cv2.putText(frame, "Language Detect: {}".format(language_string),
+                (10, 95), cv2.FONT_HERSHEY_SIMPLEX, 0.6, COLOR_PINK, 1)
+
     return frame
 
 
@@ -449,7 +468,9 @@ def ocr_stream(crop: list[int, int], source: int = 0, view_mode: int = 1, langua
         frame = video_stream.frame  # Grabs the most recent frame read by the VideoStream class
 
         # All display frame additions go here # # # CUSTOMIZABLE
+
         frame = put_rate(frame, cps1.rate())
+        frame = put_informations(frame)
         frame = put_language(frame, lang_name)
         frame = put_crop_box(frame, img_wi, img_hi, cropx, cropy)
         frame, text = put_ocr_boxes(ocr.boxes, frame, img_hi,
