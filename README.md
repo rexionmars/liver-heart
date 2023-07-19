@@ -28,7 +28,8 @@ This software is in the early stages of development and currently does not have 
 🟡 Only the English text detection has a 75% accuracy rate<br>
 🟡 Parameter customization only via command-line<br>
 🔴 High processing consumption, even with multi-threading<br>
-🔴 Low accuracy in optical character recognition (OCR)
+🔴 Low accuracy in optical character recognition (OCR)<br>
+🔴 [**Raspberry PI 3**] Tested only on **ARM Cortex-A53-based** architecture
 
 ### Contributors
 ![GitHub Contributors Image](https://contrib.rocks/image?repo=rexionmars/liver-heart)
