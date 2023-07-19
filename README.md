@@ -25,6 +25,7 @@ This software is in the early stages of development and currently does not have 
 - [x] Raspberry PI 3
 - [ ] ARM Cortex
 ## Current limitations ⚠️
+🟡 Only the English text detection has a 75% accuracy rate<br>
 🟡 Parameter customization only via command-line<br>
 🔴 High processing consumption, even with multi-threading<br>
 🔴 Low accuracy in optical character recognition (OCR)
