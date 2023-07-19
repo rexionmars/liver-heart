@@ -38,5 +38,5 @@ Contact: [opensource.leonardi@gmail.com](mailto:opensource.leonardi@gmail.com)
 
 If you find this project useful and would like to support its ongoing development, consider becoming a sponsor. You can make a one-time or recurring donation and help keep this project alive.
 
-[![Sponsor this project](https://img.shields.io/badge/GitHub%20Sponsors-Sponsor%20this%20project-red.svg)](https://github.com/rexionmars/sponsor)
+[![Sponsor this project](https://img.shields.io/badge/GitHub%20Sponsors-Sponsor%20this%20project-red.svg)](https://github.com/sponsors/rexionmars)
 
