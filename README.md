@@ -13,10 +13,30 @@
 ## Basic Archtecture API
 <img src="thumbnail-git/api.png" alt="Snake logo">
 -->
-This will be updated soon<br>
+This software is in the early stages of development and currently does not have any documentation or demonstration of its usage. Please stay tuned for more information as the project progresses.
 
-## Main characteristics
+## Main characteristics 🔍
 - [x] Easy use
-- [x] Embedded Software
+- [ ] Embedded Software
 - [x] Customizable to meet your needs.
-- [x] High-Performance
+- [ ] High-Performance
+## Supported platforms for upcoming versions 🛠
+- [ ] NVIDIA Jestson
+- [x] Raspberry PI 3
+- [ ] ARM Cortex
+## Current limitations ⚠️
+🟡 Parameter customization only via command-line<br>
+🔴 High processing consumption, even with multi-threading<br>
+🔴 Low accuracy in optical character recognition (OCR)
+
+### Contributors
+![GitHub Contributors Image](https://contrib.rocks/image?repo=rexionmars/liver-heart)
+
+Contact: [opensource.leonardi@gmail.com](mailto:opensource.leonardi@gmail.com)
+
+## Sponsor this project
+
+If you find this project useful and would like to support its ongoing development, consider becoming a sponsor. You can make a one-time or recurring donation and help keep this project alive.
+
+[![Sponsor this project](https://img.shields.io/badge/GitHub%20Sponsors-Sponsor%20this%20project-red.svg)](https://github.com/rexionmars/sponsor)
+
