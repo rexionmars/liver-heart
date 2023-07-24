@@ -1,5 +1,0 @@
-#+TITLE: Raspberry PI 3 Ecosystem
-#+AUTHOR: João Leonardi
-
-* Stage 1
-**
