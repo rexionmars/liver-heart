@@ -5,6 +5,7 @@ from datetime import datetime
 import time
 import threading
 from threading import Thread
+import sightvision
 
 import cv2
 import numpy
@@ -204,7 +205,7 @@ class OCR:
 
                 # # # CUSTOM FRAME PRE-PROCESSING GOES HERE # # #
                 frame = cv2.cvtColor(frame, cv2.COLOR_RGB2GRAY)
-                #frame = cv2.adaptiveThreshold(frame, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, 2)
+                frame = cv2.adaptiveThreshold(frame, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, 2)
 
                 frame = frame[self.crop_height:(self.height - self.crop_height),
                               self.crop_width:(self.width - self.crop_width)]
@@ -481,5 +482,9 @@ def ocr_stream(crop: list[int, int], source: int = 0, view_mode: int = 1, langua
             print('\n' + text)
             captures = capture_image(frame, captures)
 
-        cv2.imshow("Live Heart OCR", frame)
+        gray = cv2.cvtColor(frame, cv2.COLOR_RGB2GRAY)
+        imageStacked = sightvision.stackImages([frame, gray], 2, 1)
+        cv2.imshow("Live Heart OCR", imageStacked)
+
+        
         cps1.increment()  # Incrementation for rate counter

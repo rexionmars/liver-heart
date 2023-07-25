@@ -1,11 +1,12 @@
-from flask import Flask, render_template, Response, request
+import os
+import sys
 import cv2
-from optical_character_recog import OCR
 import threading
-from flask import jsonify
-from flask import Flask, render_template, jsonify
+
+from optical_character_recog import OCR
+
+from flask import Flask, render_template, Response, request, jsonify
 from flask_socketio import SocketIO, emit
-from flask_socketio import emit
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6'
@@ -74,9 +75,10 @@ def get_detected_words():
 def show_detected_words():
     return render_template('detected_words.html')
 
+@app.route('/client')
+def serve_client():
+    return app.send_static_file('client.html')
 
-# if __name__ == '__main__':
-#     app.run(debug=True)
 
 if __name__ == '__main__':
-    socketio.run(app)
+    socketio.run(app, host='0.0.0.0', port=5000)
