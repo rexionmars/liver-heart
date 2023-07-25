@@ -10,8 +10,8 @@ import cv2
 import numpy
 import pytesseract
 
-import Linguist
-from config import *
+import optical_character_recog.Linguist
+from optical_character_recog.config import *
 
 
 def tesseract_location(root):
