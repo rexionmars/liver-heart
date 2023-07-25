@@ -28,7 +28,7 @@ def main():
 
     requiredNamed.add_argument('-t', '--tess_path',
                                help="path to the cmd root of tesseract install (see docs for further help)",
-                               metavar='')
+                               metavar='', required=True)
 
     # Optional:
     parser.add_argument('-c', '--crop', help="crop OCR area in pixels (two vals required): width height",
@@ -56,7 +56,6 @@ def main():
         print(OCR.views.__doc__)
 
     tess_path = os.path.normpath(args.tess_path)
-    #tess_path = "/usr/bin/tesseract"
     print("Using tesseract path: {}".format(tess_path))
     # This is where OCR is started...
     OCR.tesseract_location(tess_path)

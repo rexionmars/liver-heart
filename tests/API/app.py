@@ -1,28 +1,40 @@
 from flask import Flask, render_template, Response, request
 import cv2
-import OCR
+from optical_character_recog import OCR
 import threading
+from flask import jsonify
+from flask import Flask, render_template, jsonify
+from flask_socketio import SocketIO, emit
+from flask_socketio import emit
 
 app = Flask(__name__)
+app.config['SECRET_KEY'] = 'a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6'
+socketio = SocketIO(app)
 
 # Variáveis globais para o OCR e streaming
 video_stream = None
 ocr = None
+# Variável global para armazenar as palavras detectadas
+detected_words = []
 
 def generate_frames():
     global video_stream, ocr
     while True:
-        if video_stream is not None and ocr is not None:  # Verifica se video_stream e ocr foram inicializados
+        if video_stream is not None and ocr is not None:
             frame = video_stream.frame
 
             # Faz a detecção OCR no frame
-            text = OCR.put_ocr_boxes(ocr.boxes, frame, frame.shape[0],
-                                     crop_width=ocr.crop_width, crop_height=ocr.crop_height, view_mode=ocr.view_mode)[1]
+            _, text = OCR.put_ocr_boxes(ocr.boxes, frame, frame.shape[0],
+                                        crop_width=ocr.crop_width, crop_height=ocr.crop_height, view_mode=ocr.view_mode)
+
+            # Emitir as palavras detectadas para os clientes conectados através do WebSocket
+            socketio.emit('detected_words', {'words': text.split()})
 
             ret, buffer = cv2.imencode('.jpg', frame)
             frame = buffer.tobytes()
             yield (b'--frame\r\n'
                    b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
+
 
 @app.route('/')
 def index():
@@ -53,5 +65,18 @@ def start_ocr():
 def video_feed():
     return Response(generate_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
 
+@app.route('/get_detected_words')
+def get_detected_words():
+    global detected_words
+    return jsonify({'words': detected_words})
+
+@app.route('/detected_words')
+def show_detected_words():
+    return render_template('detected_words.html')
+
+
+# if __name__ == '__main__':
+#     app.run(debug=True)
+
 if __name__ == '__main__':
-    app.run(debug=True)
+    socketio.run(app)
