@@ -3,4 +3,4 @@ recognition-tests/config/__pycache__
 server/drogon-tests/build/
 __pycache__
 OCR/__pycache__
-tests
+tests/API/flask/__pycache__
