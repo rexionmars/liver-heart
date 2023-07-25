@@ -75,5 +75,10 @@ def get_detected_words():
 def show_detected_words():
     return render_template('detected_words.html')
 
+@app.route('/client')
+def serve_client():
+    return app.send_static_file('client.html')
+
+
 if __name__ == '__main__':
     socketio.run(app, host='0.0.0.0', port=5000)
