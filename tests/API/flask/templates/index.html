@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Heart OCR</title>
+</head>
+<body>
+    <h1>Live Heart OCR</h1>
+    <form action="/start_ocr" method="post">
+        Source: <input type="number" name="source" value="0"><br>
+        Crop Width: <input type="number" name="crop_width" value="200"><br>
+        Crop Height: <input type="number" name="crop_height" value="200"><br>
+        View Mode: <input type="number" name="view_mode" value="1"><br>
+        Language: <input type="text" name="language" value=""><br>
+        <input type="submit" value="Start OCR">
+    </form>
+
+    <img src="{{ url_for('video_feed') }}" width="640" height="480" style="border: 1px solid black;">
+</body>
+</html>
