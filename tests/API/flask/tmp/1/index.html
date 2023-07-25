@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Heart OCR</title>
+</head>
+<body>
+    <h1>Live Heart OCR</h1>
+    <video id="video_feed" width="640" height="480" autoplay></video>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const video = document.getElementById('video_feed');
+            const startButton = document.createElement('button');
+            const stopButton = document.createElement('button');
+            startButton.textContent = 'Start OCR';
+            stopButton.textContent = 'Stop OCR';
+
+            startButton.addEventListener('click', () => {
+                fetch('/start_ocr', { method: 'POST' });
+                video.src = '/video_feed';
+            });
+
+            stopButton.addEventListener('click', () => {
+                fetch('/stop_ocr', { method: 'POST' });
+                video.src = '';
+            });
+
+            document.body.appendChild(startButton);
+            document.body.appendChild(stopButton);
+        });
+    </script>
+</body>
+</html>

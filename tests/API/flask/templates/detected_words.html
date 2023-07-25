@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Palavras Detectadas</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+</head>
+<body>
+    <h1>Palavras Detectadas:</h1>
+    <ul id="word-list">
+        <!-- As palavras serão preenchidas aqui usando JavaScript -->
+    </ul>
+
+    <script>
+        // Conectar-se ao servidor através do WebSocket
+        var socket = io.connect('http://' + document.domain + ':' + location.port);
+
+        // Função para atualizar a lista de palavras detectadas
+        function updateWordList(words) {
+            var wordList = document.getElementById('word-list');
+            wordList.innerHTML = ''; // Limpar a lista atual
+            words.forEach(function(word) {
+                var li = document.createElement('li');
+                li.textContent = word;
+                wordList.appendChild(li);
+            });
+        }
+
+        // Receber as palavras detectadas do servidor através do WebSocket
+        socket.on('detected_words', function(data) {
+            updateWordList(data.words);
+        });
+    </script>
+</body>
+</html>
