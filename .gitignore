@@ -5,3 +5,6 @@ __pycache__
 OCR/__pycache__
 tests/API/__pycache__
 tests/API/tmp
+venv
+null
+.flake8
