@@ -1,18 +1,17 @@
 import os
-from pathlib import Path
 import sys
-from datetime import datetime
 import time
 import threading
 from threading import Thread
-import sightvision
+from datetime import datetime
+from pathlib import Path
 
 import cv2
+import Linguist
 import numpy
 import pytesseract
 
-import Linguist
-from config import *
+import config
 
 
 def tesseract_location(root):
@@ -334,7 +333,7 @@ def put_ocr_boxes(boxes, frame, height, crop_width=0, crop_height=0, view_mode=1
                         text = text + ' ' + word
 
         if text.isascii():  # CV2 is only able to display ascii chars at the moment
-            cv2.putText(frame, text, (5, height - 5), cv2.FONT_HERSHEY_DUPLEX, 1, COLOR_RED)
+            cv2.putText(frame, text, (5, height - 5), cv2.FONT_HERSHEY_DUPLEX, 1, config.COLOR_RED)
             print(text)
 
     return frame, text
@@ -355,7 +354,7 @@ def put_crop_box(frame: numpy.ndarray, width: int, height: int, crop_width: int,
 
     # Center screen rectngle
     cv2.rectangle(frame, (crop_width, crop_height), (width - crop_width, height - crop_height),
-                  COLOR_ORANGE, thickness=1)
+                  config.COLOR_ORANGE, thickness=1)
     return frame
 
 
@@ -371,11 +370,12 @@ def put_rate(frame: numpy.ndarray, rate: float) -> numpy.ndarray:
     :return: CV2 display frame with rate added
     """
     cv2.putText(frame, "{} ".format(int(rate)),
-                (10, 75), cv2.FONT_HERSHEY_PLAIN, 1.5, COLOR_GREEN, 2)
-    cv2.putText(frame, "Iters/s".format(int(rate)),
-                (60, 75), cv2.FONT_HERSHEY_SIMPLEX, 0.5, COLOR_GREEN, 1)
+                (10, 75), cv2.FONT_HERSHEY_PLAIN, 1.5, config.COLOR_GREEN, 2)
+    cv2.putText(frame, "{} Iters/s".format(int(rate)),
+                (60, 75), cv2.FONT_HERSHEY_SIMPLEX, 0.5, config.COLOR_GREEN, 1)
     print("{} Iterations/Second".format(int(rate)))
     return frame
+
 
 def put_informations(frame: numpy.ndarray) -> numpy.ndarray:
     """
@@ -385,9 +385,9 @@ def put_informations(frame: numpy.ndarray) -> numpy.ndarray:
 
     :return: CV2 display frame with informations added
     """
-    cv2.putText(frame, "Live Heart OCR", (10, 25), cv2.FONT_HERSHEY_DUPLEX, 1.0, COLOR_RED, 2)
-    cv2.putText(frame, "Email: opensource.leonardi@gmail.com", (10, 47), cv2.FONT_HERSHEY_SIMPLEX, 0.7, COLOR_PURPLE, 1)
-    cv2.putText(frame, "github.com/rexionmars", (10, 115), cv2.FONT_HERSHEY_SIMPLEX, 0.5, COLOR_RED)
+    cv2.putText(frame, "Live Heart OCR", (10, 25), cv2.FONT_HERSHEY_DUPLEX, 1.0, config.COLOR_RED, 2)
+    cv2.putText(frame, "Email: opensource.leonardi@gmail.com", (10, 47), cv2.FONT_HERSHEY_SIMPLEX, 0.7, config.COLOR_PURPLE, 1)
+    cv2.putText(frame, "github.com/rexionmars", (10, 115), cv2.FONT_HERSHEY_SIMPLEX, 0.5, config.COLOR_RED)
 
     return frame
 
@@ -402,7 +402,7 @@ def put_language(frame: numpy.ndarray, language_string: str) -> numpy.ndarray:
     :returns: CV2 display frame with language name added
     """
     cv2.putText(frame, "Language Detect: {}".format(language_string),
-                (10, 95), cv2.FONT_HERSHEY_SIMPLEX, 0.6, COLOR_PINK, 1)
+                (10, 95), cv2.FONT_HERSHEY_SIMPLEX, 0.6, config.COLOR_PINK, 1)
 
     return frame
 
@@ -482,9 +482,6 @@ def ocr_stream(crop: list[int, int], source: int = 0, view_mode: int = 1, langua
             print('\n' + text)
             captures = capture_image(frame, captures)
 
-        gray = cv2.cvtColor(frame, cv2.COLOR_RGB2GRAY)
-        imageStacked = sightvision.stackImages([frame, gray], 2, 1)
-        cv2.imshow("Live Heart OCR", imageStacked)
+        cv2.imshow("Live Heart OCR", frame)
 
-        
         cps1.increment()  # Incrementation for rate counter
