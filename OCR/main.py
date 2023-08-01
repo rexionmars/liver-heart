@@ -1,14 +1,17 @@
 import argparse
 import os
-import OCR
+
 import Linguist
+
+import OCR
+
 
 def main():
     """
     Handles command line arguments and begins the real-time OCR by calling ocr_stream().
     A path to the Tesseract cmd root is required, but all other params are optional.
 
-    Example command-line use: python3 Main.py -t /usr/local/Cellar/tesseract/4.1.1/bin/tesseract
+    Example command-line use on linux: python3 Main.py -t /usr/bin/tesseract
 
     optional arguments:
       -h, --help         show this help message and exit
