@@ -10,8 +10,8 @@ import cv2
 import numpy
 import pytesseract
 
-import optical_character_recog.Linguist
-from optical_character_recog.config import *
+import optic.Linguist as Linguist
+import optic.config as config
 
 
 def tesseract_location(root):
@@ -25,7 +25,9 @@ def tesseract_location(root):
     try:
         pytesseract.pytesseract.tesseract_cmd = root
     except FileNotFoundError:
-        print("Please double check the Tesseract file directory or ensure it's installed.")
+        print(
+            "Please double check the Tesseract file directory or ensure it's installed."
+        )
         sys.exit(1)
 
 
@@ -66,7 +68,7 @@ class RateCounter:
         """
         Returns the iterations/seconds
         """
-        elapsed_time = (time.perf_counter() - self.start_time)
+        elapsed_time = time.perf_counter() - self.start_time
         return self.iterations / elapsed_time
 
 
@@ -199,15 +201,19 @@ class OCR:
         Output data from pytesseract is stored in the self.boxes attribute.
         """
         while not self.stopped:
-            if self.exchange is not None:  # Defends against an undefined VideoStream reference
+            if (
+                self.exchange is not None
+            ):  # Defends against an undefined VideoStream reference
                 frame = self.exchange.frame
 
                 # # # CUSTOM FRAME PRE-PROCESSING GOES HERE # # #
                 frame = cv2.cvtColor(frame, cv2.COLOR_RGB2GRAY)
-                #frame = cv2.adaptiveThreshold(frame, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, 2)
+                # frame = cv2.adaptiveThreshold(frame, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, 2)
 
-                frame = frame[self.crop_height:(self.height - self.crop_height),
-                              self.crop_width:(self.width - self.crop_width)]
+                frame = frame[
+                    self.crop_height : (self.height - self.crop_height),
+                    self.crop_width : (self.width - self.crop_width),
+                ]
 
                 self.boxes = pytesseract.image_to_data(frame, lang=self.language)
 
@@ -242,12 +248,20 @@ def capture_image(frame, captures=0):
     :return: Updated number of captures. If capture param not used, returns 1 by default
     """
     cwd_path = os.getcwd()
-    Path(cwd_path + '/images').mkdir(parents=False, exist_ok=True)
+    Path(cwd_path + "/images").mkdir(parents=False, exist_ok=True)
 
     now = datetime.now()
-    # Example: "OCR 2021-04-8 at 12:26:21-1.jpg"  ...Handles multiple captures taken in the same second
-    name = "OCR " + now.strftime("%Y-%m-%d") + " at " + now.strftime("%H:%M:%S") + '-' + str(captures + 1) + '.jpg'
-    path = 'images/' + name
+    # Example: "OCR 2021-04-8 at 12:26:21-1.jpg" ...Handles multiple captures taken in the same second
+    name = (
+        "OCR "
+        + now.strftime("%Y-%m-%d")
+        + " at "
+        + now.strftime("%H:%M:%S")
+        + "-"
+        + str(captures + 1)
+        + ".jpg"
+    )
+    path = "images/" + name
     cv2.imwrite(path, frame)
     captures += 1
     print(name)
@@ -312,11 +326,18 @@ def put_ocr_boxes(boxes, frame, height, crop_width=0, crop_height=0, view_mode=1
     """
 
     if view_mode not in [1, 2, 3, 4]:
-        raise Exception("A nonexistent view mode was selected. Only modes 1-4 are available")
+        raise Exception(
+            "A nonexistent view mode was selected. Only modes 1-4 are available"
+        )
 
-    text = ''  # Initializing a string which will later be appended with the detected text
+    text = (
+        ""  # Initializing a string which will later be appended with the detected text
+    )
+
     if boxes is not None:  # Defends against empty data from tesseract image_to_data
-        for i, box in enumerate(boxes.splitlines()):  # Next three lines turn data into a list
+        for i, box in enumerate(
+            boxes.splitlines()
+        ):  # Next three lines turn data into a list
             box = box.split()
             if i != 0:
                 if len(box) == 12:
@@ -330,16 +351,25 @@ def put_ocr_boxes(boxes, frame, height, crop_width=0, crop_height=0, view_mode=1
 
                     if int(float(conf)) > conf_thresh:
                         cv2.rectangle(frame, (x, y), (w + x, h + y), color, thickness=1)
-                        text = text + ' ' + word
+                        text = text + " " + word
 
         if text.isascii():  # CV2 is only able to display ascii chars at the moment
-            cv2.putText(frame, text, (5, height - 5), cv2.FONT_HERSHEY_DUPLEX, 1, COLOR_RED)
+            cv2.putText(
+                frame,
+                text,
+                (5, height - 5),
+                cv2.FONT_HERSHEY_DUPLEX,
+                1,
+                config.COLOR_RED,
+            )
             print(text)
 
     return frame, text
 
 
-def put_crop_box(frame: numpy.ndarray, width: int, height: int, crop_width: int, crop_height: int):
+def put_crop_box(
+    frame: numpy.ndarray, width: int, height: int, crop_width: int, crop_height: int
+):
     """
     Simply draws a rectangle over the frame with specified height and width to show a crop zone
 
@@ -353,8 +383,14 @@ def put_crop_box(frame: numpy.ndarray, width: int, height: int, crop_width: int,
     """
 
     # Center screen rectngle
-    cv2.rectangle(frame, (crop_width, crop_height), (width - crop_width, height - crop_height),
-                  COLOR_ORANGE, thickness=1)
+    cv2.rectangle(
+        frame,
+        (crop_width, crop_height),
+        (width - crop_width, height - crop_height),
+        config.COLOR_ORANGE,
+        thickness=1,
+    )
+
     return frame
 
 
@@ -369,12 +405,27 @@ def put_rate(frame: numpy.ndarray, rate: float) -> numpy.ndarray:
 
     :return: CV2 display frame with rate added
     """
-    cv2.putText(frame, "{} ".format(int(rate)),
-                (10, 75), cv2.FONT_HERSHEY_PLAIN, 1.5, COLOR_GREEN, 2)
-    cv2.putText(frame, "Iters/s".format(int(rate)),
-                (60, 75), cv2.FONT_HERSHEY_SIMPLEX, 0.5, COLOR_GREEN, 1)
+    cv2.putText(
+        frame,
+        "{} ".format(int(rate)),
+        (10, 75),
+        cv2.FONT_HERSHEY_PLAIN,
+        1.5,
+        config.COLOR_GREEN,
+        2,
+    )
+    cv2.putText(
+        frame,
+        "Iters/s",
+        (60, 75),
+        cv2.FONT_HERSHEY_SIMPLEX,
+        0.5,
+        config.COLOR_GREEN,
+        1,
+    )
     print("{} Iterations/Second".format(int(rate)))
     return frame
+
 
 def put_informations(frame: numpy.ndarray) -> numpy.ndarray:
     """
@@ -384,9 +435,32 @@ def put_informations(frame: numpy.ndarray) -> numpy.ndarray:
 
     :return: CV2 display frame with informations added
     """
-    cv2.putText(frame, "Live Heart OCR", (10, 25), cv2.FONT_HERSHEY_DUPLEX, 1.0, COLOR_RED, 2)
-    cv2.putText(frame, "Email: opensource.leonardi@gmail.com", (10, 47), cv2.FONT_HERSHEY_SIMPLEX, 0.7, COLOR_PURPLE, 1)
-    cv2.putText(frame, "github.com/rexionmars", (10, 115), cv2.FONT_HERSHEY_SIMPLEX, 0.5, COLOR_RED)
+    cv2.putText(
+        frame,
+        "Live Heart OCR",
+        (10, 25),
+        cv2.FONT_HERSHEY_DUPLEX,
+        1.0,
+        config.COLOR_RED,
+        2,
+    )
+    cv2.putText(
+        frame,
+        "Email: opensource.leonardi@gmail.com",
+        (10, 47),
+        cv2.FONT_HERSHEY_SIMPLEX,
+        0.7,
+        config.COLOR_PURPLE,
+        1,
+    )
+    cv2.putText(
+        frame,
+        "github.com/rexionmars",
+        (10, 115),
+        cv2.FONT_HERSHEY_SIMPLEX,
+        0.5,
+        config.COLOR_RED,
+    )
 
     return frame
 
@@ -400,13 +474,22 @@ def put_language(frame: numpy.ndarray, language_string: str) -> numpy.ndarray:
 
     :returns: CV2 display frame with language name added
     """
-    cv2.putText(frame, "Language Detect: {}".format(language_string),
-                (10, 95), cv2.FONT_HERSHEY_SIMPLEX, 0.6, COLOR_PINK, 1)
+    cv2.putText(
+        frame,
+        "Language Detect: {}".format(language_string),
+        (10, 95),
+        cv2.FONT_HERSHEY_SIMPLEX,
+        0.6,
+        config.COLOR_PINK,
+        1,
+    )
 
     return frame
 
 
-def ocr_stream(crop: list[int, int], source: int = 0, view_mode: int = 1, language=None):
+def ocr_stream(
+    crop: list[int, int], source: int = 0, view_mode: int = 1, language=None
+):
     """
     Begins the video stream and text OCR in two threads, then shows the video in a CV2 frame with the OCR
     boxes overlaid in real-time.
@@ -445,27 +528,37 @@ def ocr_stream(crop: list[int, int], source: int = 0, view_mode: int = 1, langua
     ocr = OCR().start()  # Starts optical character recognition in dedicated thread
     print("OCR stream started")
     print("Active threads: {}".format(threading.activeCount()))
+
     ocr.set_exchange(video_stream)
     ocr.set_language(language)
-    ocr.set_dimensions(img_wi, img_hi, cropx, cropy)  # Tells the OCR class where to perform OCR (if img is cropped)
+    ocr.set_dimensions(
+        img_wi, img_hi, cropx, cropy
+    )  # Tells the OCR class where to perform OCR (if img is cropped)
 
     cps1 = RateCounter().start()
-    lang_name = Linguist.language_string(language)  # Creates readable language names from tesseract langauge code
+    lang_name = Linguist.language_string(
+        language
+    )  # Creates readable language names from tesseract langauge code
 
     # Main display loop
     print("\nPUSH c TO CAPTURE AN IMAGE. PUSH q TO VIEW VIDEO STREAM\n")
-    while True:
 
+    while True:
         # Quit condition:
         pressed_key = cv2.waitKey(1) & 0xFF
-        if pressed_key == ord('q'):
+
+        if pressed_key == ord("q"):
             video_stream.stop_process()
             ocr.stop_process()
             print("OCR stream stopped\n")
-            print("{} image(s) captured and saved to current directory".format(captures))
+            print(
+                "{} image(s) captured and saved to current directory".format(captures)
+            )
             break
 
-        frame = video_stream.frame  # Grabs the most recent frame read by the VideoStream class
+        frame = (
+            video_stream.frame
+        )  # Grabs the most recent frame read by the VideoStream class
 
         # All display frame additions go here # # # CUSTOMIZABLE
 
@@ -473,12 +566,18 @@ def ocr_stream(crop: list[int, int], source: int = 0, view_mode: int = 1, langua
         frame = put_informations(frame)
         frame = put_language(frame, lang_name)
         frame = put_crop_box(frame, img_wi, img_hi, cropx, cropy)
-        frame, text = put_ocr_boxes(ocr.boxes, frame, img_hi,
-                                    crop_width=cropx, crop_height=cropy, view_mode=view_mode)
+        frame, text = put_ocr_boxes(
+            ocr.boxes,
+            frame,
+            img_hi,
+            crop_width=cropx,
+            crop_height=cropy,
+            view_mode=view_mode,
+        )
 
         # Photo capture:
-        if pressed_key == ord('c'):
-            print('\n' + text)
+        if pressed_key == ord("c"):
+            print("\n" + text)
             captures = capture_image(frame, captures)
 
         cv2.imshow("Live Heart OCR", frame)

@@ -3,7 +3,7 @@ import sys
 import cv2
 import threading
 
-from optical_character_recog import OCR
+from tests.API.optic import core
 
 from flask import Flask, render_template, Response, request, jsonify
 from flask_socketio import SocketIO, emit
@@ -22,12 +22,13 @@ detected_words = []
 
 def generate_frames():
     global video_stream, ocr
+
     while True:
         if video_stream is not None and ocr is not None:
             frame = video_stream.frame
 
             # Faz a detecção OCR no frame
-            _, text = OCR.put_ocr_boxes(
+            _, text = core.put_ocr_boxes(
                 ocr.boxes,
                 frame,
                 frame.shape[0],
@@ -59,10 +60,11 @@ def start_ocr():
     view_mode = int(data["view_mode"])
     language = data["language"]
 
-    video_stream = OCR.VideoStream(source).start()
+    video_stream = core.VideoStream(source).start()
     img_wi, img_hi = video_stream.get_video_dimensions()
 
-    ocr = OCR.OCR().start()
+    ocr = core.OCR().start()
+
     ocr.set_exchange(video_stream)
     ocr.set_language(language)
     ocr.set_dimensions(img_wi, img_hi, crop[0], crop[1])
