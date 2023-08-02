@@ -354,7 +354,7 @@ def put_crop_box(frame: numpy.ndarray, width: int, height: int, crop_width: int,
 
     # Center screen rectngle
     cv2.rectangle(frame, (crop_width, crop_height), (width - crop_width, height - crop_height),
-                  config.COLOR_ORANGE, thickness=1)
+                  config.COLOR_PINK, thickness=1)
     return frame
 
 
@@ -432,6 +432,18 @@ def ocr_stream(crop: list[int, int], source: int = 0, view_mode: int = 1, langua
     """
     captures = 0  # Number of still image captures during view session
 
+    # Adicione as seguintes variáveis globais:
+    cropx = 200
+    cropy = 200
+
+    def on_trackbar_cropx(val):
+        global cropx
+        cropx = val
+
+    def on_trackbar_cropy(val):
+        global cropy
+        cropy = val
+
     video_stream = VideoStream(source).start()  # Starts reading the video stream in dedicated thread
     img_wi, img_hi = video_stream.get_video_dimensions()
 
@@ -453,9 +465,15 @@ def ocr_stream(crop: list[int, int], source: int = 0, view_mode: int = 1, langua
     cps1 = RateCounter().start()
     lang_name = Linguist.language_string(language)  # Creates readable language names from tesseract langauge code
 
+    cv2.namedWindow("Live Heart OCR")
+    cv2.createTrackbar("Crop X", "Live Heart OCR", cropx, 500, on_trackbar_cropx)
+    cv2.createTrackbar("Crop Y", "Live Heart OCR", cropy, 500, on_trackbar_cropy)
+
     # Main display loop
     print("\nPUSH c TO CAPTURE AN IMAGE. PUSH q TO VIEW VIDEO STREAM\n")
     while True:
+        cropx = cv2.getTrackbarPos("Crop X", "Live Heart OCR")
+        cropy = cv2.getTrackbarPos("Crop Y", "Live Heart OCR")
 
         # Quit condition:
         pressed_key = cv2.waitKey(1) & 0xFF
