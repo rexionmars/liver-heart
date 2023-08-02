@@ -3,7 +3,7 @@ import os
 
 import Linguist
 
-import OCR
+import core
 
 
 def main():
@@ -56,13 +56,13 @@ def main():
         Linguist.show_codes()
 
     if args.show_views:
-        print(OCR.views.__doc__)
+        print(core.views.__doc__)
 
     tess_path = os.path.normpath(args.tess_path)
     print("Using tesseract path: {}".format(tess_path))
     # This is where OCR is started...
-    OCR.tesseract_location(tess_path)
-    OCR.ocr_stream(view_mode=args.view_mode, source=args.src, crop=args.crop, language=args.language)
+    core.tesseract_location(tess_path)
+    core.ocr_stream(view_mode=args.view_mode, source=args.src, crop=args.crop, language=args.language)
 
 
 if __name__ == '__main__':
