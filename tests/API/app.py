@@ -2,8 +2,9 @@ import os
 import sys
 import cv2
 import threading
+import json
 
-from tests.API.optic import core
+from optic import core
 
 from flask import Flask, render_template, Response, request, jsonify
 from flask_socketio import SocketIO, emit
@@ -83,7 +84,17 @@ def video_feed():
 @app.route("/get_detected_words")
 def get_detected_words():
     global detected_words
-    return jsonify({"words": detected_words})
+
+    test = ["detect 1", "detect 2", "detect 3"]
+
+    data_info = {
+        "Presure": test.get(),
+        "OxGEN": test[1] if test[1] else 0,
+    }
+
+    # response = json.dumps(data_info)
+
+    return jsonify(data_info)
 
 
 @app.route("/detected_words")
@@ -91,10 +102,5 @@ def show_detected_words():
     return render_template("detected_words.html")
 
 
-@app.route("/client")
-def serve_client():
-    return app.send_static_file("client.html")
-
-
 if __name__ == "__main__":
-    socketio.run(app, host="0.0.0.0", port=5000)
+    socketio.run(app, debug=True, host="0.0.0.0", port=5000)
