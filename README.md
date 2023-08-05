@@ -15,9 +15,14 @@
 -->
 This software is in the early stages of development and currently does not have any documentation or demonstration of its usage. Please stay tuned for more information as the project progresses.
 
+
+## Keras OCR
 <br>Check the results at: https://github.com/rexionmars/liver-heart/tree/master/xresults
 
 <img src="thumbnail-git/keras.jpg" alt="Snake logo">
+
+## Embedded Platform
+<img src="thumbnail-git/platform.png" alt="Snake logo">
 
 ## Main characteristics 🔍
 - [x] Easy use
