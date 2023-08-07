@@ -11,7 +11,7 @@ from flask_socketio import SocketIO, emit
 
 
 app = Flask(__name__)
-app.config["SECRET_KEY"] = "a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6"
+app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
 socketio = SocketIO(app)
 
 # Variáveis globais para o OCR e streaming
@@ -81,25 +81,26 @@ def video_feed():
     )
 
 
-@app.route("/get_detected_words")
+@app.route("/get-detected-words")
 def get_detected_words():
     global detected_words
-
-    test = ["detect 1", "detect 2", "detect 3"]
+    words = detected_words
 
     data_info = {
-        "Presure": test.get(),
-        "OxGEN": test[1] if test[1] else 0,
+        "detection": words,
     }
 
-    # response = json.dumps(data_info)
-
-    return jsonify(data_info)
+    return jsonify(data_info), 200
 
 
 @app.route("/detected_words")
 def show_detected_words():
     return render_template("detected_words.html")
+
+
+@app.route("/test")
+def test():
+    return 200
 
 
 if __name__ == "__main__":
