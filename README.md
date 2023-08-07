@@ -26,9 +26,9 @@ This software is in the early stages of development and currently does not have 
 
 ## Main characteristics 🔍
 - [x] Easy use
-- [ ] Embedded Software
+- [X] Cross-Platform
+- [X] Embedded Software
 - [x] Customizable to meet your needs.
-- [ ] High-Performance
 ## Supported platforms for upcoming versions 🛠
 - [ ] NVIDIA Jestson
 - [x] Raspberry PI 3
