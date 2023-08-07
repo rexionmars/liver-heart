@@ -8,25 +8,42 @@ ECG = 80  # Heart rate
 RESP = 14  # Resparation rate
 SPO2 = 99  # Oxygen saturation (%)
 CO2 = 38  # Carbon dioxide
-IBP = "120/80"  # Ivansive Blood Presure
+
+# Ivansive Blood Presure
+ART_IBP = "120/80"
+ART_MMHG = 93
+CVP_IBP = "120/80"
+CVP_MMHG = 93
+
 NIMP = "120/80"  # Non-invasive Blood Presure
+NIMP_MMHG = 93
 
 
 signals: dict = {
     "ECG bpm": ECG,
     "RESP": RESP,
-    "SPO2": SPO2,
-    "CO2": CO2,
-    "IBP": IBP,
-    "NIMP": NIMP
+    "SpO2": SPO2,
+    "Co2": CO2,
+    "IBP": {
+        "ART": {
+            "mmHg": ART_MMHG,
+            "sys": ART_IBP,
+        },
+        "CVP": {
+            "mmHg": CVP_MMHG,
+            "sys": CVP_IBP,
+        },
+    },
+    "NIMP": {
+        "mmHg": NIMP_MMHG,
+        "sys": NIMP,
+    }
 }
 
 
 @app.route('/monitor')
 def api():
-    response = json.dumps(signals, indent=4)
-    print(response)
-
+    _ = json.dumps(signals, indent=4)
     return jsonify(signals), 200
 
 

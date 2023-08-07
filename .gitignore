@@ -5,6 +5,12 @@ __pycache__
 OCR/__pycache__
 tests/API/__pycache__
 tests/API/tmp
+tests/API/model.lvh
+tests/API/model.py
 venv
 null
 .flake8
+.local.env
+*.out
+*.lvh
+.vscode
