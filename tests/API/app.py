@@ -98,10 +98,5 @@ def show_detected_words():
     return render_template("detected_words.html")
 
 
-@app.route("/test")
-def test():
-    return 200
-
-
 if __name__ == "__main__":
     socketio.run(app, debug=True, host="0.0.0.0", port=5000)
