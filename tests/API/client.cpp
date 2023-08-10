@@ -1,12 +1,8 @@
 #include <iostream>
 #include <curl/curl.h>
 
-size_t WriteCallBack(void* contens, size_t size, size_t nmemb, std::string* response)
-{
-    size_t totalSize = size * nmemb;
-    response->append((char*)contens, totalSize);
-    return totalSize;
-}
+
+size_t WriteCallBack(void* contens, size_t size, size_t nmemb, std::string* response);
 
 
 int main(int argc, char* argv[])
@@ -47,4 +43,11 @@ int main(int argc, char* argv[])
 
     curl_global_cleanup();
     return 0;
+}
+
+size_t WriteCallBack(void* contens, size_t size, size_t nmemb, std::string* response)
+{
+    size_t totalSize = size * nmemb;
+    response->append((char*)contens, totalSize);
+    return totalSize;
 }
