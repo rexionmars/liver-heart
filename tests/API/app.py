@@ -5,6 +5,7 @@ import threading
 import json
 
 from optic import core
+from model import Model
 
 from flask import Flask, render_template, Response, request, jsonify
 from flask_socketio import SocketIO, emit
@@ -71,7 +72,12 @@ def start_ocr():
     ocr.set_dimensions(img_wi, img_hi, crop[0], crop[1])
     ocr.view_mode = view_mode  # Adiciona o atributo view_mode à classe OCR
 
-    return "OCR started successfully."
+    return jsonify({"ok": 200})
+
+
+@app.route("/tests")
+def test():
+    return jsonify(Model.vital_signs_monitor())
 
 
 @app.route("/video_feed")
