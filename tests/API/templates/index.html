@@ -21,29 +21,28 @@
     <img src="{{ url_for('video_feed') }}" width="640" height="480" style="border: 1px solid black;">
 
     <h1>Palavras Detectadas:</h1>
-    <ul id="word-list">
-        <!-- As palavras serão preenchidas aqui usando JavaScript -->
-    </ul>
+    <ul id="word-list"></ul>
 
     <script>
         // Conectar-se ao servidor através do WebSocket
         var socket = io.connect('http://' + document.domain + ':' + location.port);
 
         // Função para atualizar a lista de palavras detectadas
-        function updateWordList(words) {
-            var wordList = document.getElementById('word-list');
+        updateWordList = (words) => {
+            let wordList = document.getElementById('word-list');
+
             wordList.innerHTML = ''; // Limpar a lista atual
+
             words.forEach(function(word) {
-                var li = document.createElement('li');
+                let li = document.createElement('li');
                 li.textContent = word;
                 wordList.appendChild(li);
             });
         }
 
-        // Receber as palavras detectadas do servidor através do WebSocket
+        // Receber as palavras detectadas do servidor via do WebSocket
         socket.on('detected_words', function(data) {
             updateWordList(data.words);
-            console.log(data.words)
         });
     </script>
 </body>
