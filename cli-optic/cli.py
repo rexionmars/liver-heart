@@ -48,7 +48,7 @@ def main():
     parser.add_argument("-sl", "--show_langs", help="show list of tesseract (4.0+) supported langs",
                         action="store_true")
     parser.add_argument("-s", "--src", help="SRC video source for video capture",
-                        default=0, type=int)
+                        default=0)
 
     args = parser.parse_args()
 

@@ -407,7 +407,7 @@ def put_language(frame: numpy.ndarray, language_string: str) -> numpy.ndarray:
     return frame
 
 
-def ocr_stream(crop: list[int, int], source: int = 0, view_mode: int = 1, language=None):
+def ocr_stream(crop: list[int, int], source = 0, view_mode: int = 1, language=None):
     """
     Begins the video stream and text OCR in two threads, then shows the video in a CV2 frame with the OCR
     boxes overlaid in real-time.
@@ -445,6 +445,7 @@ def ocr_stream(crop: list[int, int], source: int = 0, view_mode: int = 1, langua
         cropy = val
 
     video_stream = VideoStream(source).start()  # Starts reading the video stream in dedicated thread
+    #video_stream = VideoStream("http://192.168.0.51:81/stream").start()  # Starts reading the video stream in dedicated thread
     img_wi, img_hi = video_stream.get_video_dimensions()
 
     if crop is None:  # Setting crop area and confirming valid parameters
