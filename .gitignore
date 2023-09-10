@@ -14,3 +14,4 @@ null
 .local.env
 *.out
 .vscode
+docs
