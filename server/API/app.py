@@ -23,7 +23,7 @@ detected_words = []
 
 
 def generate_frames():
-    global video_stream, ocr
+    global video_stream, ocr, detected_words
 
     while True:
         if video_stream is not None and ocr is not None:
@@ -39,8 +39,11 @@ def generate_frames():
                 view_mode=ocr.view_mode,
             )
 
+            # Adicione as palavras detectadas à lista detected_words
+            detected_words = text.split()
+
             # Emitir as palavras detectadas para os clientes conectados através do WebSocket
-            socketio.emit("detected_words", {"words": text.split()})
+            socketio.emit("detected_words", {"words": detected_words})
 
             ret, buffer = cv2.imencode(".jpg", frame)
             frame = buffer.tobytes()
@@ -57,7 +60,7 @@ def start_ocr():
     global video_stream, ocr
 
     data = request.form
-    source = int(data["source"])
+    source = data["source"]
     crop = [int(data["crop_width"]), int(data["crop_height"])]
     view_mode = int(data["view_mode"])
     language = data["language"]
