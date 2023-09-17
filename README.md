@@ -1,3 +1,11 @@
+```sh
+Peoples:
+Author: João Leonardi da Silva Melo
+Email: joao_leonardi.melo@somosicev.com
+Teacher: Francisco Luciani de Miranda Vieira
+Email: francisco.vieira@somosicev.com
+```
+
 <div align=center>
   <h1 align=center>LIVE HEART</h1>
   <p align=center>Real-time embedded software for optical character recognition (OCR) on hospital monitors and providing the data to an API.</p>
@@ -28,26 +36,17 @@ This software is in the early stages of development and currently does not have 
 - [x] Easy use
 - [X] Cross-Platform
 - [X] Embedded Software
+- [x] Multple Clients
 - [x] Customizable to meet your needs.
 ## Supported platforms for upcoming versions 🛠
 - [ ] NVIDIA Jestson
 - [x] Raspberry PI 3
 - [ ] ARM Cortex
+- [x] Web Server
 ## Current limitations ⚠️
 🟡 Only the English text detection has a 75% accuracy rate<br>
 🟡 Parameter customization only via command-line<br>
 🔴 High processing consumption, even with multi-threading<br>
 🔴 Low accuracy in optical character recognition (OCR)<br>
 🔴 [**Raspberry PI 3**] Tested only on **ARM Cortex-A53-based** architecture
-
-### Contributors
-![GitHub Contributors Image](https://contrib.rocks/image?repo=rexionmars/liver-heart)
-
-Contact: [opensource.leonardi@gmail.com](mailto:opensource.leonardi@gmail.com)
-
-## Sponsor this project
-
-If you find this project useful and would like to support its ongoing development, consider becoming a sponsor. You can make a one-time or recurring donation and help keep this project alive.
-
-[![Sponsor this project](https://img.shields.io/badge/GitHub%20Sponsors-Sponsor%20this%20project-red.svg)](https://github.com/sponsors/rexionmars)
 
