@@ -11,6 +11,8 @@ import Linguist
 import numpy
 import pytesseract
 
+from sightvision import stackImages
+
 import config
 
 
@@ -95,6 +97,7 @@ class VideoStream:
         self.stream = cv2.VideoCapture(src)
         (self.grabbed, self.frame) = self.stream.read()
         self.stopped = False
+
 
     def start(self):
         """
@@ -386,8 +389,8 @@ def put_informations(frame: numpy.ndarray) -> numpy.ndarray:
     :return: CV2 display frame with informations added
     """
     cv2.putText(frame, "Live Heart OCR", (10, 25), cv2.FONT_HERSHEY_DUPLEX, 1.0, config.COLOR_RED, 2)
-    cv2.putText(frame, "Email: opensource.leonardi@gmail.com", (10, 47), cv2.FONT_HERSHEY_SIMPLEX, 0.7, config.COLOR_PURPLE, 1)
-    cv2.putText(frame, "github.com/rexionmars", (10, 115), cv2.FONT_HERSHEY_SIMPLEX, 0.5, config.COLOR_RED)
+    #cv2.putText(frame, "Email: opensource.leonardi@gmail.com", (10, 47), cv2.FONT_HERSHEY_SIMPLEX, 0.7, config.COLOR_PURPLE, 1)
+    #cv2.putText(frame, "github.com/rexionmars", (10, 115), cv2.FONT_HERSHEY_SIMPLEX, 0.5, config.COLOR_RED)
 
     return frame
 
@@ -488,7 +491,6 @@ def ocr_stream(crop: list[int, int], source = 0, view_mode: int = 1, language=No
         frame = video_stream.frame  # Grabs the most recent frame read by the VideoStream class
 
         # All display frame additions go here # # # CUSTOMIZABLE
-
         frame = put_rate(frame, cps1.rate())
         frame = put_informations(frame)
         frame = put_language(frame, lang_name)
@@ -496,11 +498,18 @@ def ocr_stream(crop: list[int, int], source = 0, view_mode: int = 1, language=No
         frame, text = put_ocr_boxes(ocr.boxes, frame, img_hi,
                                     crop_width=cropx, crop_height=cropy, view_mode=view_mode)
 
+        img_grayscale = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        img_threshold = cv2.adaptiveThreshold(img_grayscale, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, 2)
+
+        frames = [frame, img_grayscale, img_threshold]
+        #stack_frames = stackImages(frames, 3, 1)
+
         # Photo capture:
         if pressed_key == ord('c'):
             print('\n' + text)
             captures = capture_image(frame, captures)
 
         cv2.imshow("Live Heart OCR", frame)
+        # cv2.imshow("Live Heart OCR", stack_frames)
 
         cps1.increment()  # Incrementation for rate counter
