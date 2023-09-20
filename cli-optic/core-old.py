@@ -11,6 +11,7 @@ import Linguist
 import numpy
 import pytesseract
 
+from sightvision import stackImages
 
 import config
 
@@ -341,24 +342,6 @@ def put_ocr_boxes(boxes, frame, height, crop_width=0, crop_height=0, view_mode=1
     return frame, text
 
     
-
-##############################
-def put_crop_box(frame: numpy.ndarray, width: int, height: int, crop_width: int, crop_height: int):
-    global x_position, y_position
-
-    # Limitando as coordenadas para ficarem dentro dos limites do frame
-    x_position = max(0, min(x_position, width))
-    y_position = max(0, min(y_position, height))
-
-    # Desenha o retângulo com base nas coordenadas X e Y
-    cv2.rectangle(frame, (crop_width + x_position, crop_height + y_position), 
-                  (width - crop_width - x_position, height - crop_height - y_position),
-                  config.COLOR_PINK, thickness=1)
-
-    return frame
-
-########################
-# Variáveis globais para as coordenadas X e Y
 x_position = 200
 y_position = 200
 
@@ -371,31 +354,32 @@ def on_y_position_change(val):
     y_position = val
 
 
+def put_crop_box(frame: numpy.ndarray, width: int, height: int, crop_width: int, crop_height: int):
+    """
+    Simply draws a rectangle over the frame with specified height and width to show a crop zone
 
+    :param numpy.ndarray frame: CV2 display frame for crop-box destination
+    :param int width: Width of the CV2 frame
+    :param int height: Height of the CV2 frame
+    :param int crop_width: Horizontal crop amount
+    :param int crop_height: Vertical crop amount
 
+    :return: CV2 display frame with crop box added
+    """
+    global x_position, y_position
 
+    # Limitando as coordenadas para ficarem dentro dos limites do frame
+    # x_position = max(0, min(x_position, width))
+    # y_position = max(0, min(y_position, height))
+    # # Desenha o retângulo com base nas coordenadas X e Y
+    # cv2.rectangle(frame, (x_position, y_position), (width - x_position, height - y_position), (0, 255, 0), thickness=1)
 
-
-
-
-# def put_crop_box(frame: numpy.ndarray, width: int, height: int, crop_width: int, crop_height: int):
-#     """
-#     Simply draws a rectangle over the frame with specified height and width to show a crop zone
-
-#     :param numpy.ndarray frame: CV2 display frame for crop-box destination
-#     :param int width: Width of the CV2 frame
-#     :param int height: Height of the CV2 frame
-#     :param int crop_width: Horizontal crop amount
-#     :param int crop_height: Vertical crop amount
-
-#     :return: CV2 display frame with crop box added
-#     """
-#     # Center screen rectngle
-#     print(width, height)
-#     # Adjust start position of rectanle X, Y
-#     cv2.rectangle(frame, (crop_width, crop_height), (width - crop_width, height - crop_height),
-#                   config.COLOR_PINK, thickness=1)
-#     return frame
+    # Center screen rectngle
+    print(width, height)
+    # Adjust start position of rectanle X, Y
+    cv2.rectangle(frame, (crop_width, crop_height), (width - crop_width, height - crop_height),
+                  config.COLOR_PINK, thickness=1)
+    return frame
 
 
 def put_rate(frame: numpy.ndarray, rate: float) -> numpy.ndarray:
@@ -446,6 +430,7 @@ def put_language(frame: numpy.ndarray, language_string: str) -> numpy.ndarray:
 
     return frame
 
+
 def ocr_stream(crop: list[int, int], source = 0, view_mode: int = 1, language=None):
     """
     Begins the video stream and text OCR in two threads, then shows the video in a CV2 frame with the OCR
@@ -471,6 +456,17 @@ def ocr_stream(crop: list[int, int], source = 0, view_mode: int = 1, language=No
     """
     captures = 0  # Number of still image captures during view session
 
+    # Adicione as seguintes variáveis globais:
+    cropx = 200
+    cropy = 200
+
+    def on_trackbar_cropx(val):
+        global cropx
+        cropx = val
+
+    def on_trackbar_cropy(val):
+        global cropy
+        cropy = val
 
     video_stream = VideoStream(source).start()  # Starts reading the video stream in dedicated thread
     #video_stream = VideoStream("http://192.168.0.51:81/stream").start()  # Starts reading the video stream in dedicated thread
@@ -494,10 +490,15 @@ def ocr_stream(crop: list[int, int], source = 0, view_mode: int = 1, language=No
     cps1 = RateCounter().start()
     lang_name = Linguist.language_string(language)  # Creates readable language names from tesseract langauge code
 
-    ###########################################
     cv2.namedWindow("Live Heart OCR")
-    cv2.createTrackbar("X Position", "Live Heart OCR", x_position, 500, on_x_position_change)
-    cv2.createTrackbar("Y Position", "Live Heart OCR", y_position, 500, on_y_position_change)
+    cv2.createTrackbar("Crop X", "Live Heart OCR", cropx, 500, on_trackbar_cropx)
+    cv2.createTrackbar("Crop Y", "Live Heart OCR", cropy, 500, on_trackbar_cropy)
+
+    # Cria as trackbars para ajustar as coordenadas X e Y
+    # cv2.createTrackbar("X Position", "Video", x_position, 500, on_x_position_change)
+    # cv2.createTrackbar("Y Position", "Video", y_position, 500, on_y_position_change)
+
+    # Main display loop
     print("\nPUSH c TO CAPTURE AN IMAGE. PUSH q TO VIEW VIDEO STREAM\n")
     while True:
         cropx = cv2.getTrackbarPos("Crop X", "Live Heart OCR")
@@ -526,6 +527,7 @@ def ocr_stream(crop: list[int, int], source = 0, view_mode: int = 1, language=No
         img_threshold = cv2.adaptiveThreshold(img_grayscale, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, 2)
 
         frames = [frame, img_grayscale, img_threshold]
+        #stack_frames = stackImages(frames, 3, 1)
 
         # Photo capture:
         if pressed_key == ord('c'):
