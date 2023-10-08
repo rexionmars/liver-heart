@@ -1,5 +1,8 @@
 import cv2
 import easyocr
+
+import sys
+import os
 import threading
 
 class TextRecognition:
@@ -34,7 +37,7 @@ class TextRecognition:
 
             cv2.rectangle(frame, top_left, bottom_right, (0, 255, 0), 1)
             cv2.putText(frame, text, (top_left[0], top_left[1] - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1)
-            print(f"Text: {text} Prob: {prob}")
+            print(f"Text: {text} Prob: {prob:.2f}")
 
         cv2.rectangle(frame, (self.x_position, self.y_position), (self.x_position + self.crop_width, self.y_position + self.crop_height), (0, 0, 255), 1)
         self.last_frame = frame
