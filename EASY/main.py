@@ -2,93 +2,98 @@ import cv2
 import easyocr
 import threading
 
-# Inicialize o EasyOCR
-reader = easyocr.Reader(['en'])
+class TextRecognition:
+    def __init__(self, video_source, language='en'):
+        self.reader = easyocr.Reader([language])
+        self.video_capture = VideoCapture(video_source)
+        self.last_frame = None
+        self.x_position = 200
+        self.y_position = 200
+        self.crop_width = 200
+        self.crop_height = 200
 
-# URL da câmera de entrada
-url = 'http://192.168.0.51:81/stream'
+    def start(self):
+        video_thread = threading.Thread(target=self.video_processing_thread)
+        video_thread.start()
+        self.display_window()
 
-# Inicialize o objeto de captura de vídeo
-cap = cv2.VideoCapture(url)
+    def read_text(self, frame):
+        if frame is None:
+            return
 
-# Variável para armazenar o último frame processado
-last_frame = None
+        cropped_frame = frame[self.y_position:self.y_position + self.crop_height, self.x_position:self.x_position + self.crop_width]
+        results = self.reader.readtext(cropped_frame)
 
-# Variáveis para definir a zona de captura inicial
-x_position = 200
-y_position = 200
-crop_width = 200
-crop_height = 200
+        for (bbox, text, prob) in results:
+            (top_left, top_right, bottom_right, bottom_left) = bbox
+            top_left = tuple(map(int, top_left))
+            bottom_right = tuple(map(int, bottom_right))
 
-# Função para ler texto em um frame
-def read_text(frame):
-    global last_frame
+            top_left = (top_left[0] + self.x_position, top_left[1] + self.y_position)
+            bottom_right = (bottom_right[0] + self.x_position, bottom_right[1] + self.y_position)
 
-    # Certifique-se de que a captura de vídeo foi bem-sucedida
-    if frame is None:
-        return
+            cv2.rectangle(frame, top_left, bottom_right, (0, 255, 0), 1)
+            cv2.putText(frame, text, (top_left[0], top_left[1] - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1)
+            print(f"Text: {text} Prob: {prob}")
 
-    # Aplique a zona de captura no frame
-    cropped_frame = frame[y_position:y_position + crop_height, x_position:x_position + crop_width]
+        cv2.rectangle(frame, (self.x_position, self.y_position), (self.x_position + self.crop_width, self.y_position + self.crop_height), (0, 0, 255), 1)
+        self.last_frame = frame
 
-    # Realize a detecção de texto usando o EasyOCR
-    results = reader.readtext(cropped_frame)
+    def video_processing_thread(self):
+        while True:
+            ret, frame = self.video_capture.read()
+            self.read_text(frame)
 
-    for (bbox, text, prob) in results:
-        (top_left, top_right, bottom_right, bottom_left) = bbox
-        top_left = tuple(map(int, top_left))
-        bottom_right = tuple(map(int, bottom_right))
+    def display_window(self):
+        cv2.namedWindow('Text Recognition')
+        cv2.createTrackbar('X Position', 'Text Recognition', self.x_position, self.video_capture.width, self.on_x_position_change)
+        cv2.createTrackbar('Y Position', 'Text Recognition', self.y_position, self.video_capture.height, self.on_y_position_change)
+        cv2.createTrackbar('Crop Width', 'Text Recognition', self.crop_width, self.video_capture.width, self.on_crop_width_change)
+        cv2.createTrackbar('Crop Height', 'Text Recognition', self.crop_height, self.video_capture.height, self.on_crop_height_change)
 
-        # Ajuste as coordenadas da caixa delimitadora para o frame original
-        top_left = (top_left[0] + x_position, top_left[1] + y_position)
-        bottom_right = (bottom_right[0] + x_position, bottom_right[1] + y_position)
+        while True:
+            self.update_trackbar_values()
+            if self.last_frame is not None:
+                cv2.imshow('Text Recognition', self.last_frame)
 
-        # Desenhe a caixa delimitadora e o texto reconhecido na imagem original
-        cv2.rectangle(frame, top_left, bottom_right, (0, 255, 0), 1)
-        cv2.putText(frame, text, (top_left[0], top_left[1] - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 0), 1)
-        print(f"Text: {text} Prob: {prob}")
+            if cv2.waitKey(1) & 0xFF == ord('q'):
+                break
 
-    # Desenhe o retângulo de corte
-    cv2.rectangle(frame, (x_position, y_position), (x_position + crop_width, y_position + crop_height), (0, 0, 255), 1)
+        self.video_capture.release()
+        cv2.destroyAllWindows()
 
-    # Atualize o último frame processado
-    last_frame = frame
+    def on_x_position_change(self, val):
+        self.x_position = val
 
-# Função para processar o vídeo em segundo plano
-def video_processing_thread():
-    while True:
-        # Leia o próximo frame
-        ret, frame = cap.read()
+    def on_y_position_change(self, val):
+        self.y_position = val
 
-        # Chame a função de reconhecimento de texto
-        read_text(frame)
+    def on_crop_width_change(self, val):
+        self.crop_width = val
 
-# Inicie a thread de processamento de vídeo
-video_thread = threading.Thread(target=video_processing_thread)
-video_thread.start()
+    def on_crop_height_change(self, val):
+        self.crop_height = val
 
-# Crie a janela para exibir a imagem e as trackbars
-cv2.namedWindow('Text Recognition')
-cv2.createTrackbar('X Position', 'Text Recognition', x_position, 640, lambda x: None)
-cv2.createTrackbar('Y Position', 'Text Recognition', y_position, 480, lambda x: None)
-cv2.createTrackbar('Crop Width', 'Text Recognition', crop_width, 640, lambda x: None)
-cv2.createTrackbar('Crop Height', 'Text Recognition', crop_height, 480, lambda x: None)
+    def update_trackbar_values(self):
+        self.x_position = cv2.getTrackbarPos('X Position', 'Text Recognition')
+        self.y_position = cv2.getTrackbarPos('Y Position', 'Text Recognition')
+        self.crop_width = cv2.getTrackbarPos('Crop Width', 'Text Recognition')
+        self.crop_height = cv2.getTrackbarPos('Crop Height', 'Text Recognition')
 
-while True:
-    # Obtenha os valores das trackbars
-    x_position = cv2.getTrackbarPos('X Position', 'Text Recognition')
-    y_position = cv2.getTrackbarPos('Y Position', 'Text Recognition')
-    crop_width = cv2.getTrackbarPos('Crop Width', 'Text Recognition')
-    crop_height = cv2.getTrackbarPos('Crop Height', 'Text Recognition')
 
-    # Exiba o último frame processado
-    if last_frame is not None:
-        cv2.imshow('Text Recognition', last_frame)
+class VideoCapture:
+    def __init__(self, source):
+        self.cap = cv2.VideoCapture(source)
+        self.width = int(self.cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+        self.height = int(self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
 
-    # Saia do loop quando pressionar 'q'
-    if cv2.waitKey(1) & 0xFF == ord('q'):
-        break
+    def read(self):
+        return self.cap.read()
 
-# Libere os recursos
-cap.release()
-cv2.destroyAllWindows()
+    def release(self):
+        self.cap.release()
+
+
+if __name__ == "__main__":
+    text_recognition = TextRecognition('http://192.168.0.51:81/stream')
+    text_recognition.start()
