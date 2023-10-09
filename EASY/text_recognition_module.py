@@ -1,3 +1,4 @@
+
 import cv2
 import easyocr
 import threading
@@ -5,12 +6,11 @@ import threading
 class TextRecognition:
     def __init__(self, video_source, language="en"):
         self.reader = easyocr.Reader([language])
-        self.video_capture = cv2.VideoCapture(video_source)
+        self.video_capture = VideoCapture(video_source)
         self.last_frame = None
         self.rois = []  # Lista para armazenar as ROIs
         self.selected_roi = None
-        self.selected_roi_index = None
-        self.roi_size = 100  # Tamanho inicial das ROIs
+        self.dragging = False
 
     def start(self):
         video_thread = threading.Thread(target=self.video_processing_thread)
@@ -74,20 +74,28 @@ class TextRecognition:
             for i, roi in enumerate(self.rois):
                 if x >= roi[0] and x <= roi[0] + roi[2] and y >= roi[1] and y <= roi[1] + roi[3]:
                     self.selected_roi = roi
-                    self.selected_roi_index = i
+                    self.dragging = True
                     break
 
             if self.selected_roi is None:
-                # Create a new ROI with a default size
-                self.rois.append([x, y, self.roi_size, self.roi_size])
+                # Create a new ROI with initial position
+                self.selected_roi = [x, y, 0, 0]
+                self.dragging = True
 
-        elif event == cv2.EVENT_MOUSEMOVE and self.selected_roi is not None:
+        elif event == cv2.EVENT_MOUSEMOVE and self.dragging:
             self.selected_roi[2] = x - self.selected_roi[0]
             self.selected_roi[3] = y - self.selected_roi[1]
 
-        elif event == cv2.EVENT_LBUTTONUP:
+        elif event == cv2.EVENT_LBUTTONUP and self.dragging:
+            self.dragging = False
+            if self.selected_roi[2] < 0:
+                self.selected_roi[0] += self.selected_roi[2]
+                self.selected_roi[2] = abs(self.selected_roi[2])
+            if self.selected_roi[3] < 0:
+                self.selected_roi[1] += self.selected_roi[3]
+                self.selected_roi[3] = abs(self.selected_roi[3])
+            self.rois.append(self.selected_roi)
             self.selected_roi = None
-            self.selected_roi_index = None
 
     def update_trackbar_values(self):
         for i, roi in enumerate(self.rois):
@@ -125,7 +133,18 @@ class TextRecognition:
 
     def on_roi_size_change(self, val, index):
         self.rois[index][2] = val
-        self.rois[index][3] = val
+
+class VideoCapture:
+    def __init__(self, source):
+        self.cap = cv2.VideoCapture(source)
+        self.width = int(self.cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+        self.height = int(self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+
+    def read(self):
+        return self.cap.read()
+
+    def release(self):
+        self.cap.release()
 
 if __name__ == "__main__":
     text_recognition = TextRecognition("http://192.168.0.51:81/stream")
