@@ -4,6 +4,13 @@ import threading
 
 class TextRecognition:
     def __init__(self, video_source, language="en"):
+        """
+        Initialize the TextRecognition object.
+
+        Args:
+            video_source (str): URL or path to the video source.
+            language (str, optional): Language for text recognition. Defaults to "en".
+        """
         self.reader = easyocr.Reader([language])
         self.video_capture = VideoCapture(video_source)
         self.last_frame = None
@@ -12,11 +19,20 @@ class TextRecognition:
         self.drawing = False  # Flag to indicate if we are drawing an ROI
 
     def start(self):
+        """
+        Start video processing and display the window.
+        """
         video_thread = threading.Thread(target=self.video_processing_thread)
         video_thread.start()
         self.display_window()
 
     def read_text(self, frame):
+        """
+        Read text from ROIs in the frame and display results.
+
+        Args:
+            frame (numpy.ndarray): Input video frame.
+        """
         if frame is None:
             return
 
@@ -71,11 +87,17 @@ class TextRecognition:
         self.last_frame = frame
 
     def video_processing_thread(self):
+        """
+        Thread function for video processing.
+        """
         while True:
             ret, frame = self.video_capture.read()
             self.read_text(frame)
 
     def display_window(self):
+        """
+        Display the video window and handle mouse events.
+        """
         cv2.namedWindow("Text Recognition")
         cv2.setMouseCallback("Text Recognition", self.on_mouse_events)
 
@@ -93,6 +115,16 @@ class TextRecognition:
         cv2.destroyAllWindows()
 
     def on_mouse_events(self, event, x, y, flags, param):
+        """
+        Handle mouse events for creating and editing ROIs.
+
+        Args:
+            event (int): Event type.
+            x (int): X coordinate of the mouse event.
+            y (int): Y coordinate of the mouse event.
+            flags (int): Flags associated with the event.
+            param (int): Additional parameters.
+        """
         if event == cv2.EVENT_LBUTTONDOWN:
             self.drawing = True
             self.current_roi = [x, y, 0, 0]
@@ -111,15 +143,31 @@ class TextRecognition:
             self.rois.pop()
 
 class VideoCapture:
+    """
+    Initialize the VideoCapture object.
+
+    Args:
+        source (str): URL or path to the video source.
+    """
     def __init__(self, source):
         self.cap = cv2.VideoCapture(source)
         self.width = int(self.cap.get(cv2.CAP_PROP_FRAME_WIDTH))
         self.height = int(self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
 
     def read(self):
+        """
+        Read a frame from the video source.
+
+        Returns:
+            ret (bool): True if a frame is read successfully.
+            frame (numpy.ndarray): The video frame.
+        """
         return self.cap.read()
 
     def release(self):
+        """
+        Release the video capture object.
+        """
         self.cap.release()
 
 if __name__ == "__main__":
