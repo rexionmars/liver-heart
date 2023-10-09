@@ -1,19 +1,15 @@
 import cv2
 import easyocr
-
-import sys
-import os
 import threading
 
 class TextRecognition:
-    def __init__(self, video_source, language='en'):
+    def __init__(self, video_source, language="en"):
         self.reader = easyocr.Reader([language])
-        self.video_capture = VideoCapture(video_source)
+        self.video_capture = cv2.VideoCapture(video_source)
         self.last_frame = None
-        self.x_position = 200
-        self.y_position = 200
-        self.crop_width = 200
-        self.crop_height = 200
+        self.rois = []  # Lista para armazenar as ROIs
+        self.selected_roi = None
+        self.selected_roi_index = None
 
     def start(self):
         video_thread = threading.Thread(target=self.video_processing_thread)
@@ -24,22 +20,32 @@ class TextRecognition:
         if frame is None:
             return
 
-        cropped_frame = frame[self.y_position:self.y_position + self.crop_height, self.x_position:self.x_position + self.crop_width]
-        results = self.reader.readtext(cropped_frame)
+        for roi in self.rois:
+            x, y, w, h = roi
+            cropped_frame = frame[y:y+h, x:x+w]
+            results = self.reader.readtext(cropped_frame)
 
-        for (bbox, text, prob) in results:
-            (top_left, top_right, bottom_right, bottom_left) = bbox
-            top_left = tuple(map(int, top_left))
-            bottom_right = tuple(map(int, bottom_right))
+            for bbox, text, prob in results:
+                (top_left, top_right, bottom_right, bottom_left) = bbox
+                top_left = tuple(map(int, top_left))
+                bottom_right = tuple(map(int, bottom_right))
 
-            top_left = (top_left[0] + self.x_position, top_left[1] + self.y_position)
-            bottom_right = (bottom_right[0] + self.x_position, bottom_right[1] + self.y_position)
+                top_left = (top_left[0] + x, top_left[1] + y)
+                bottom_right = (bottom_right[0] + x, bottom_right[1] + y)
 
-            cv2.rectangle(frame, top_left, bottom_right, (0, 255, 0), 1)
-            cv2.putText(frame, text, (top_left[0], top_left[1] - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1)
-            print(f"Text: {text} Prob: {prob:.2f}")
+                cv2.rectangle(frame, top_left, bottom_right, (0, 255, 0), 1)
+                cv2.putText(
+                    frame,
+                    text,
+                    (top_left[0], top_left[1] - 10),
+                    cv2.FONT_HERSHEY_SIMPLEX,
+                    0.5,
+                    (0, 255, 0),
+                    1,
+                )
+                print(f"Text: {text} Prob: {prob}")
 
-        cv2.rectangle(frame, (self.x_position, self.y_position), (self.x_position + self.crop_width, self.y_position + self.crop_height), (0, 0, 255), 1)
+            cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 0, 255), 1)
         self.last_frame = frame
 
     def video_processing_thread(self):
@@ -48,55 +54,77 @@ class TextRecognition:
             self.read_text(frame)
 
     def display_window(self):
-        cv2.namedWindow('Text Recognition')
-        cv2.createTrackbar('X Position', 'Text Recognition', self.x_position, self.video_capture.width, self.on_x_position_change)
-        cv2.createTrackbar('Y Position', 'Text Recognition', self.y_position, self.video_capture.height, self.on_y_position_change)
-        cv2.createTrackbar('Crop Width', 'Text Recognition', self.crop_width, self.video_capture.width, self.on_crop_width_change)
-        cv2.createTrackbar('Crop Height', 'Text Recognition', self.crop_height, self.video_capture.height, self.on_crop_height_change)
+        cv2.namedWindow("Text Recognition")
+        cv2.setMouseCallback("Text Recognition", self.on_mouse_event)
+        self.update_trackbar_values()
 
         while True:
-            self.update_trackbar_values()
             if self.last_frame is not None:
-                cv2.imshow('Text Recognition', self.last_frame)
+                cv2.imshow("Text Recognition", self.last_frame)
 
-            if cv2.waitKey(1) & 0xFF == ord('q'):
+            if cv2.waitKey(1) & 0xFF == ord("q"):
                 break
 
         self.video_capture.release()
         cv2.destroyAllWindows()
 
-    def on_x_position_change(self, val):
-        self.x_position = val
+    def on_mouse_event(self, event, x, y, flags, param):
+        if event == cv2.EVENT_LBUTTONDOWN:
+            for i, roi in enumerate(self.rois):
+                if x >= roi[0] and x <= roi[0] + roi[2] and y >= roi[1] and y <= roi[1] + roi[3]:
+                    self.selected_roi = roi
+                    self.selected_roi_index = i
+                    break
 
-    def on_y_position_change(self, val):
-        self.y_position = val
+            if self.selected_roi is None:
+                # Create a new ROI
+                self.rois.append([x, y, 100, 100])  # Default size 100x100
 
-    def on_crop_width_change(self, val):
-        self.crop_width = val
+        elif event == cv2.EVENT_MOUSEMOVE and self.selected_roi is not None:
+            self.selected_roi[2] = x - self.selected_roi[0]
+            self.selected_roi[3] = y - self.selected_roi[1]
 
-    def on_crop_height_change(self, val):
-        self.crop_height = val
+        elif event == cv2.EVENT_LBUTTONUP:
+            self.selected_roi = None
+            self.selected_roi_index = None
 
     def update_trackbar_values(self):
-        self.x_position = cv2.getTrackbarPos('X Position', 'Text Recognition')
-        self.y_position = cv2.getTrackbarPos('Y Position', 'Text Recognition')
-        self.crop_width = cv2.getTrackbarPos('Crop Width', 'Text Recognition')
-        self.crop_height = cv2.getTrackbarPos('Crop Height', 'Text Recognition')
+        for i, roi in enumerate(self.rois):
+            cv2.createTrackbar(
+                f'X Position {i}',
+                'Text Recognition',
+                roi[0],
+                self.video_capture.width,
+                lambda val, i=i: self.on_roi_position_change(val, i),
+            )
+            cv2.createTrackbar(
+                f'Y Position {i}',
+                'Text Recognition',
+                roi[1],
+                self.video_capture.height,
+                lambda val, i=i: self.on_roi_position_change(val, i),
+            )
+            cv2.createTrackbar(
+                f'Width {i}',
+                'Text Recognition',
+                roi[2],
+                self.video_capture.width,
+                lambda val, i=i: self.on_roi_size_change(val, i),
+            )
+            cv2.createTrackbar(
+                f'Height {i}',
+                'Text Recognition',
+                roi[3],
+                self.video_capture.height,
+                lambda val, i=i: self.on_roi_size_change(val, i),
+            )
 
+    def on_roi_position_change(self, val, index):
+        self.rois[index][0] = val
 
-class VideoCapture:
-    def __init__(self, source):
-        self.cap = cv2.VideoCapture(source)
-        self.width = int(self.cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-        self.height = int(self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-
-    def read(self):
-        return self.cap.read()
-
-    def release(self):
-        self.cap.release()
-
+    def on_roi_size_change(self, val, index):
+        self.rois[index][2] = val
 
 if __name__ == "__main__":
-    text_recognition = TextRecognition('http://192.168.0.51:81/stream')
+    text_recognition = TextRecognition("http://192.168.0.51:81/stream")
     text_recognition.start()
