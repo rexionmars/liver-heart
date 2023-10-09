@@ -52,17 +52,17 @@ class TextRecognition:
                     bottom_right[1] + y,
                 )
 
-                cv2.rectangle(frame, top_left, bottom_right, (0, 255, 0), 1)
+                cv2.rectangle(frame, top_left, bottom_right, (23, 195, 255), 1) # Rectangle for detecion bound-box
                 cv2.putText(
                     frame,
                     text,
                     (top_left[0], top_left[1] - 10),
                     cv2.FONT_HERSHEY_SIMPLEX,
                     0.5,
-                    (0, 255, 0),
+                    (23, 195, 255),
                     1,
                 )
-                print(f"Text: {text} Prob: {prob}")
+                print(f"Text: {text} [Acuracy: {prob:.2f}]")
 
         for roi in self.rois:
             x, y, w, h = roi
@@ -70,7 +70,7 @@ class TextRecognition:
                 frame,
                 (x, y),
                 (x + w, y + h),
-                (0, 0, 255),
+                (214, 102, 3), # Finaly rectangle
                 1,
             )
 
@@ -80,7 +80,7 @@ class TextRecognition:
                 frame,
                 (x, y),
                 (x + w, y + h),
-                (0, 255, 0),
+                (129, 23, 255), # Current rectangle
                 1,
             )
 
