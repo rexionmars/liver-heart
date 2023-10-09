@@ -1,6 +1,7 @@
 import cv2
 import easyocr
 import threading
+import json
 import re
 
 class TextRecognition:
@@ -8,9 +9,9 @@ class TextRecognition:
         self.reader = easyocr.Reader([language])
         self.video_capture = VideoCapture(video_source)
         self.last_frame = None
-        self.rois = []  # Lista para armazenar as ROIs
-        self.current_roi = None  # A ROI atualmente sendo criada
-        self.drawing = False  # Flag para indicar se estamos desenhando uma ROI
+        self.rois = []  # List to store ROIs
+        self.current_roi = None  # The currently being created ROI
+        self.drawing = False  # Flag to indicate if we are drawing an ROI
 
     def start(self):
         video_thread = threading.Thread(target=self.video_processing_thread)
@@ -21,39 +22,36 @@ class TextRecognition:
         if frame is None:
             return
 
-        for roi in self.rois:
+        roi_data = {}  # Dictionary to store ROI data
+
+        for i, roi in enumerate(self.rois):
             x, y, w, h = roi
             cropped_frame = frame[y:y + h, x:x + w]
             results = self.reader.readtext(cropped_frame)
 
+            roi_info = {}  # Dictionary to store current ROI information
+
             for bbox, text, prob in results:
-                # Extrai números usando expressão regular
-                numbers = re.findall(r'\d+', text)
-                label = ' '.join([word for word in text.split() if not word.isdigit()])
-                label = label.strip()
+                label, value = self.extract_label_and_value(text)
+                roi_info[label] = value
 
-                print(f"{label}: {', '.join(numbers)}")
-
-                (top_left, top_right, bottom_right, bottom_left) = bbox
-                top_left = tuple(map(int, top_left))
-                bottom_right = tuple(map(int, bottom_right))
-
-                top_left = (top_left[0] + x, top_left[1] + y)
-                bottom_right = (
-                    bottom_right[0] + x,
-                    bottom_right[1] + y,
-                )
-
-                cv2.rectangle(frame, top_left, bottom_right, (0, 255, 0), 1)
+                # Render text detection on the frame within the ROI
+                text_x = x + bbox[0][0]
+                text_y = y + bbox[0][1]
+                cv2.rectangle(frame, (text_x, text_y), (x + bbox[2][0], y + bbox[2][1]), (0, 255, 0), 1)
                 cv2.putText(
                     frame,
                     text,
-                    (top_left[0], top_left[1] - 10),
+                    (text_x, text_y - 10),
                     cv2.FONT_HERSHEY_SIMPLEX,
                     0.5,
                     (0, 255, 0),
                     1,
                 )
+
+            roi_data[f"ROI_ID {i}"] = roi_info
+
+        print(json.dumps(roi_data, indent=4))
 
         for roi in self.rois:
             x, y, w, h = roi
@@ -61,7 +59,7 @@ class TextRecognition:
                 frame,
                 (x, y),
                 (x + w, y + h),
-                (0, 0, 255),
+                (214, 102, 3),
                 1,
             )
 
@@ -71,11 +69,17 @@ class TextRecognition:
                 frame,
                 (x, y),
                 (x + w, y + h),
-                (0, 255, 0),
+                (129, 23, 255),
                 1,
             )
 
         self.last_frame = frame
+
+    def extract_label_and_value(self, text):
+        parts = re.split(r'(\d+)', text)
+        label = parts[0].strip()
+        value = parts[1].strip() if len(parts) > 1 else None
+        return label, value
 
     def video_processing_thread(self):
         while True:
