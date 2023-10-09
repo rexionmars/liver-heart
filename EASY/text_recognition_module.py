@@ -10,6 +10,7 @@ class TextRecognition:
         self.rois = []  # Lista para armazenar as ROIs
         self.selected_roi = None
         self.selected_roi_index = None
+        self.roi_size = 100  # Tamanho inicial das ROIs
 
     def start(self):
         video_thread = threading.Thread(target=self.video_processing_thread)
@@ -77,8 +78,8 @@ class TextRecognition:
                     break
 
             if self.selected_roi is None:
-                # Create a new ROI
-                self.rois.append([x, y, 100, 100])  # Default size 100x100
+                # Create a new ROI with a default size
+                self.rois.append([x, y, self.roi_size, self.roi_size])
 
         elif event == cv2.EVENT_MOUSEMOVE and self.selected_roi is not None:
             self.selected_roi[2] = x - self.selected_roi[0]
@@ -124,6 +125,7 @@ class TextRecognition:
 
     def on_roi_size_change(self, val, index):
         self.rois[index][2] = val
+        self.rois[index][3] = val
 
 if __name__ == "__main__":
     text_recognition = TextRecognition("http://192.168.0.51:81/stream")
