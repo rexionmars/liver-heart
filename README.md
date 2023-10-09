@@ -39,10 +39,10 @@ This software is in the early stages of development and currently does not have 
 - [x] Multple Clients
 - [x] Customizable to meet your needs.
 ## Supported platforms for upcoming versions 🛠
-- [ ] NVIDIA Jestson
+- [x] NVIDIA Jestson
 - [x] Raspberry PI 3
-- [ ] ARM Cortex
-- [x] Web Server
+- [x] ARM Cortex
+- [x] Espressif
 ## Current limitations ⚠️
 🟡 Only the English text detection has a 75% accuracy rate<br>
 🟡 Parameter customization only via command-line<br>
