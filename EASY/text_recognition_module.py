@@ -1,6 +1,7 @@
 import cv2
 import easyocr
 import threading
+import re
 
 class TextRecognition:
     def __init__(self, video_source, language="en"):
@@ -20,14 +21,19 @@ class TextRecognition:
         if frame is None:
             return
 
-        roi_texts = []  # Lista para armazenar textos de cada ROI
-
-        for roi_id, roi in enumerate(self.rois):
+        for roi in self.rois:
             x, y, w, h = roi
             cropped_frame = frame[y:y + h, x:x + w]
             results = self.reader.readtext(cropped_frame)
 
             for bbox, text, prob in results:
+                # Extrai números usando expressão regular
+                numbers = re.findall(r'\d+', text)
+                label = ' '.join([word for word in text.split() if not word.isdigit()])
+                label = label.strip()
+
+                print(f"{label}: {', '.join(numbers)}")
+
                 (top_left, top_right, bottom_right, bottom_left) = bbox
                 top_left = tuple(map(int, top_left))
                 bottom_right = tuple(map(int, bottom_right))
@@ -48,10 +54,8 @@ class TextRecognition:
                     (0, 255, 0),
                     1,
                 )
-                roi_texts.append(text)
-                print(f"ROI ID {roi_id} - Text: {text} [Accuracy: {prob:.2f}]")
 
-        for roi_id, roi in enumerate(self.rois):
+        for roi in self.rois:
             x, y, w, h = roi
             cv2.rectangle(
                 frame,
