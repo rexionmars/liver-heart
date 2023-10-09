@@ -4,39 +4,25 @@ import threading
 
 class TextRecognition:
     def __init__(self, video_source, language="en"):
-        """
-        Initialize the TextRecognition object.
-
-        Args:
-            video_source (str): URL or path to the video source.
-            language (str, optional): Language for text recognition. Defaults to "en".
-        """
         self.reader = easyocr.Reader([language])
         self.video_capture = VideoCapture(video_source)
         self.last_frame = None
-        self.rois = []  # List to store ROIs
-        self.current_roi = None  # The currently being created ROI
-        self.drawing = False  # Flag to indicate if we are drawing an ROI
+        self.rois = []  # Lista para armazenar as ROIs
+        self.current_roi = None  # A ROI atualmente sendo criada
+        self.drawing = False  # Flag para indicar se estamos desenhando uma ROI
 
     def start(self):
-        """
-        Start video processing and display the window.
-        """
         video_thread = threading.Thread(target=self.video_processing_thread)
         video_thread.start()
         self.display_window()
 
     def read_text(self, frame):
-        """
-        Read text from ROIs in the frame and display results.
-
-        Args:
-            frame (numpy.ndarray): Input video frame.
-        """
         if frame is None:
             return
 
-        for roi in self.rois:
+        roi_texts = []  # Lista para armazenar textos de cada ROI
+
+        for roi_id, roi in enumerate(self.rois):
             x, y, w, h = roi
             cropped_frame = frame[y:y + h, x:x + w]
             results = self.reader.readtext(cropped_frame)
@@ -52,25 +38,26 @@ class TextRecognition:
                     bottom_right[1] + y,
                 )
 
-                cv2.rectangle(frame, top_left, bottom_right, (23, 195, 255), 1)
+                cv2.rectangle(frame, top_left, bottom_right, (0, 255, 0), 1)
                 cv2.putText(
                     frame,
                     text,
                     (top_left[0], top_left[1] - 10),
                     cv2.FONT_HERSHEY_SIMPLEX,
                     0.5,
-                    (23, 195, 255),
+                    (0, 255, 0),
                     1,
                 )
-                print(f"Text: {text} [Acuracy: {prob:.2f}]")
+                roi_texts.append(text)
+                print(f"ROI ID {roi_id} - Text: {text} [Accuracy: {prob:.2f}]")
 
-        for roi in self.rois:
+        for roi_id, roi in enumerate(self.rois):
             x, y, w, h = roi
             cv2.rectangle(
                 frame,
                 (x, y),
                 (x + w, y + h),
-                (214, 102, 3),
+                (0, 0, 255),
                 1,
             )
 
@@ -80,24 +67,18 @@ class TextRecognition:
                 frame,
                 (x, y),
                 (x + w, y + h),
-                (129, 23, 255),
+                (0, 255, 0),
                 1,
             )
 
         self.last_frame = frame
 
     def video_processing_thread(self):
-        """
-        Thread function for video processing.
-        """
         while True:
             ret, frame = self.video_capture.read()
             self.read_text(frame)
 
     def display_window(self):
-        """
-        Display the video window and handle mouse events.
-        """
         cv2.namedWindow("Text Recognition")
         cv2.setMouseCallback("Text Recognition", self.on_mouse_events)
 
@@ -115,16 +96,6 @@ class TextRecognition:
         cv2.destroyAllWindows()
 
     def on_mouse_events(self, event, x, y, flags, param):
-        """
-        Handle mouse events for creating and editing ROIs.
-
-        Args:
-            event (int): Event type.
-            x (int): X coordinate of the mouse event.
-            y (int): Y coordinate of the mouse event.
-            flags (int): Flags associated with the event.
-            param (int): Additional parameters.
-        """
         if event == cv2.EVENT_LBUTTONDOWN:
             self.drawing = True
             self.current_roi = [x, y, 0, 0]
@@ -143,31 +114,15 @@ class TextRecognition:
             self.rois.pop()
 
 class VideoCapture:
-    """
-    Initialize the VideoCapture object.
-
-    Args:
-        source (str): URL or path to the video source.
-    """
     def __init__(self, source):
         self.cap = cv2.VideoCapture(source)
         self.width = int(self.cap.get(cv2.CAP_PROP_FRAME_WIDTH))
         self.height = int(self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
 
     def read(self):
-        """
-        Read a frame from the video source.
-
-        Returns:
-            ret (bool): True if a frame is read successfully.
-            frame (numpy.ndarray): The video frame.
-        """
         return self.cap.read()
 
     def release(self):
-        """
-        Release the video capture object.
-        """
         self.cap.release()
 
 if __name__ == "__main__":
