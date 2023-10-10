@@ -14,6 +14,7 @@ class TextRecognition:
         self.current_roi = None  # The currently being created ROI
         self.drawing = False  # Flag to indicate if we are drawing an ROI
         self.running = True  # Flag to indicate if the program is running
+        self.detected_values = []  # List to store detected values
 
     def start(self):
         video_thread = threading.Thread(target=self.video_processing_thread)
@@ -37,6 +38,9 @@ class TextRecognition:
                 label, value = self.extract_label_and_value(text)
                 if label:
                     roi_info[label] = value
+
+                    # Store detected value in the list
+                    self.detected_values.append(value)
 
                 # Render text detection on the frame within the ROI
                 text_x = x + bbox[0][0]
@@ -98,8 +102,12 @@ class TextRecognition:
                 cv2.imshow("Text Recognition", self.last_frame)
 
             key = cv2.waitKey(1) & 0xFF
-            if key == ord("q"):
+            if key == ord("q") or key == 27:  # 27 is the ASCII code for the 'Esc' key
                 self.running = False
+
+            # Verifica se alguma tecla foi pressionada
+            if key != 255:
+                self.on_key_events(key)
 
         self.video_capture.release()
         cv2.destroyAllWindows()
@@ -118,9 +126,20 @@ class TextRecognition:
             self.rois.append(tuple(self.current_roi))
             self.current_roi = None
 
+    def on_key_events(self, key):
+        if key == ord("d"):
+            self.remove_last_roi()
+        elif key == 27:  # 27 is the ASCII code for the 'Esc' key
+            self.running = False
+
     def remove_last_roi(self):
         if self.rois:
             self.rois.pop()
+
+    def export_detected_values(self, filename):
+        with open(filename, 'w') as file:
+            for value in self.detected_values:
+                file.write(f"{value}\n")
 
 class VideoCapture:
     def __init__(self, source):
@@ -138,5 +157,7 @@ if __name__ == "__main__":
     text_recognition = TextRecognition("http://192.168.0.51:81/stream")
     text_recognition.start()
     while text_recognition.running:
-        pass  # Aguarde até que a tecla "q" seja pressionada
-    sys.exit(0)  # Saia do programa adequadamente após a tecla "q" ser pressionada
+        pass  # Aguarde até que a tecla "q" ou "Esc" seja pressionada
+
+    text_recognition.export_detected_values("detected_values.txt")
+    sys.exit(0)
