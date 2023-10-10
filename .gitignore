@@ -15,3 +15,6 @@ null
 *.out
 .vscode
 docs
+*.json
+
+EASY/test.py
