@@ -4,6 +4,7 @@ import threading
 import json
 import re
 
+
 class TextRecognition:
     def __init__(self, video_source, language="en"):
         self.reader = easyocr.Reader([language])
@@ -26,19 +27,28 @@ class TextRecognition:
 
         for i, roi in enumerate(self.rois):
             x, y, w, h = roi
-            cropped_frame = frame[y:y + h, x:x + w]
+            cropped_frame = frame[y : y + h, x : x + w]
             results = self.reader.readtext(cropped_frame)
 
             roi_info = {}  # Dictionary to store current ROI information
 
             for bbox, text, prob in results:
                 label, value = self.extract_label_and_value(text)
-                roi_info[label] = value
+                if label:
+                    roi_info[label] = value
 
                 # Render text detection on the frame within the ROI
-                text_x = x + bbox[0][0]
-                text_y = y + bbox[0][1]
-                cv2.rectangle(frame, (text_x, text_y), (x + bbox[2][0], y + bbox[2][1]), (0, 255, 0), 1)
+                text_x = int(x + bbox[0][0])
+                text_y = int(y + bbox[0][1])
+                text_x2 = int(x + bbox[2][0])
+                text_y2 = int(y + bbox[2][1])
+                cv2.rectangle(
+                    frame,
+                    (text_x, text_y),
+                    (text_x2, text_y2),
+                    (0, 255, 0),
+                    1,
+                )
                 cv2.putText(
                     frame,
                     text,
@@ -76,7 +86,7 @@ class TextRecognition:
         self.last_frame = frame
 
     def extract_label_and_value(self, text):
-        parts = re.split(r'(\d+)', text)
+        parts = re.split(r"(\d+)", text)
         label = parts[0].strip()
         value = parts[1].strip() if len(parts) > 1 else None
         return label, value
@@ -121,6 +131,7 @@ class TextRecognition:
         if self.rois:
             self.rois.pop()
 
+
 class VideoCapture:
     def __init__(self, source):
         self.cap = cv2.VideoCapture(source)
@@ -132,6 +143,7 @@ class VideoCapture:
 
     def release(self):
         self.cap.release()
+
 
 if __name__ == "__main__":
     text_recognition = TextRecognition("http://192.168.0.51:81/stream")
