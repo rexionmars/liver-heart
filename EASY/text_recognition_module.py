@@ -3,7 +3,7 @@ import easyocr
 import threading
 import json
 import re
-
+import sys
 
 class TextRecognition:
     def __init__(self, video_source, language="en"):
@@ -13,6 +13,7 @@ class TextRecognition:
         self.rois = []  # List to store ROIs
         self.current_roi = None  # The currently being created ROI
         self.drawing = False  # Flag to indicate if we are drawing an ROI
+        self.running = True  # Flag to indicate if the program is running
 
     def start(self):
         video_thread = threading.Thread(target=self.video_processing_thread)
@@ -27,7 +28,7 @@ class TextRecognition:
 
         for i, roi in enumerate(self.rois):
             x, y, w, h = roi
-            cropped_frame = frame[y : y + h, x : x + w]
+            cropped_frame = frame[y:y + h, x:x + w]
             results = self.reader.readtext(cropped_frame)
 
             roi_info = {}  # Dictionary to store current ROI information
@@ -38,17 +39,9 @@ class TextRecognition:
                     roi_info[label] = value
 
                 # Render text detection on the frame within the ROI
-                text_x = int(x + bbox[0][0])
-                text_y = int(y + bbox[0][1])
-                text_x2 = int(x + bbox[2][0])
-                text_y2 = int(y + bbox[2][1])
-                cv2.rectangle(
-                    frame,
-                    (text_x, text_y),
-                    (text_x2, text_y2),
-                    (0, 255, 0),
-                    1,
-                )
+                text_x = x + bbox[0][0]
+                text_y = y + bbox[0][1]
+                cv2.rectangle(frame, (text_x, text_y), (x + bbox[2][0], y + bbox[2][1]), (0, 255, 0), 1)
                 cv2.putText(
                     frame,
                     text,
@@ -86,13 +79,13 @@ class TextRecognition:
         self.last_frame = frame
 
     def extract_label_and_value(self, text):
-        parts = re.split(r"(\d+)", text)
+        parts = re.split(r'(\d+)', text)
         label = parts[0].strip()
         value = parts[1].strip() if len(parts) > 1 else None
         return label, value
 
     def video_processing_thread(self):
-        while True:
+        while self.running:
             ret, frame = self.video_capture.read()
             self.read_text(frame)
 
@@ -100,15 +93,13 @@ class TextRecognition:
         cv2.namedWindow("Text Recognition")
         cv2.setMouseCallback("Text Recognition", self.on_mouse_events)
 
-        while True:
+        while self.running:
             if self.last_frame is not None:
                 cv2.imshow("Text Recognition", self.last_frame)
 
             key = cv2.waitKey(1) & 0xFF
             if key == ord("q"):
-                break
-            elif key == ord("d"):
-                self.remove_last_roi()
+                self.running = False
 
         self.video_capture.release()
         cv2.destroyAllWindows()
@@ -131,7 +122,6 @@ class TextRecognition:
         if self.rois:
             self.rois.pop()
 
-
 class VideoCapture:
     def __init__(self, source):
         self.cap = cv2.VideoCapture(source)
@@ -144,7 +134,9 @@ class VideoCapture:
     def release(self):
         self.cap.release()
 
-
 if __name__ == "__main__":
     text_recognition = TextRecognition("http://192.168.0.51:81/stream")
     text_recognition.start()
+    while text_recognition.running:
+        pass  # Aguarde até que a tecla "q" seja pressionada
+    sys.exit(0)  # Saia do programa adequadamente após a tecla "q" ser pressionada
