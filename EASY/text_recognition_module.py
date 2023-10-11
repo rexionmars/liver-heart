@@ -8,6 +8,13 @@ from queue import Queue
 
 class TextRecognition:
     def __init__(self, video_source, language="en"):
+        """
+        Initialize the TextRecognition object.
+
+        Args:
+            video_source (str): The video source URL or file path.
+            language (str): The language for text recognition (default is "en" for English).
+        """
         self.reader = easyocr.Reader([language])
         self.video_capture = VideoCapture(video_source)
         self.last_frame = None
@@ -21,6 +28,9 @@ class TextRecognition:
         self.event_queue = Queue()
 
     def start(self):
+        """
+        Start the text recognition process and display the video window.
+        """
         video_thread = threading.Thread(target=self.video_processing_thread)
         video_thread.start()
         user_input_thread = threading.Thread(target=self.handle_user_input)
@@ -28,6 +38,12 @@ class TextRecognition:
         self.display_window()
 
     def read_text(self, frame):
+        """
+        Process and read text from a given frame.
+
+        Args:
+            frame (numpy.ndarray): The frame to process and read text from.
+        """
         if frame is None:
             return
 
@@ -36,11 +52,7 @@ class TextRecognition:
         for i, roi in enumerate(self.rois):
             x, y, w, h = roi
             cropped_frame = frame[y:y + h, x:x + w]
-
-            if cropped_frame is not None and not cropped_frame.size == 0:
-                results = self.reader.readtext(cropped_frame)
-            else:
-                continue  # Skip processing if cropped_frame is empty
+            results = self.reader.readtext(cropped_frame)
 
             roi_info = {}  # Dictionary to store current ROI information
 
@@ -105,24 +117,46 @@ class TextRecognition:
         self.last_frame = frame
 
     def print_roi_data(self, roi_data):
-        #for roi_id, data in roi_data.items:
-            #print(f"ROI {roi_id}:")
-            #for label, value in data.items:
-                #print(f"{label}: {value}")
+        """
+        Print ROI data in the specified format.
+
+        Args:
+            roi_data (dict): Dictionary containing ROI data.
+        """
+        # for roi_id, data in roi_data.items():
+            # print(f"ROI {roi_id}:")
+            # for label, value in data.items():
+                # print(f"{label}: {value}")
         ...
 
     def extract_label_and_value(self, text):
+        """
+        Extract the label and value from a given text.
+
+        Args:
+            text (str): The text to extract label and value from.
+
+        Returns:
+            str: The label extracted from the text.
+            str: The value extracted from the text.
+        """
         parts = re.split(r'(\d+)', text)
         label = parts[0].strip()
         value = parts[1].strip() if len(parts) > 1 else None
         return label, value
 
     def video_processing_thread(self):
+        """
+        Process video frames for text recognition.
+        """
         while self.running:
             ret, frame = self.video_capture.read()
             self.read_text(frame)
 
     def display_window(self):
+        """
+        Display the video window for text recognition.
+        """
         cv2.namedWindow("Text Recognition")
         cv2.setMouseCallback("Text Recognition", self.on_mouse_events)
 
@@ -137,6 +171,16 @@ class TextRecognition:
         cv2.destroyAllWindows()
 
     def on_mouse_events(self, event, x, y, flags, param):
+        """
+        Handle mouse events for ROI selection.
+
+        Args:
+            event: The type of mouse event.
+            x: The x-coordinate of the event.
+            y: The y-coordinate of the event.
+            flags: Event-specific flags.
+            param: Additional parameters.
+        """
         if event == cv2.EVENT_LBUTTONDOWN:
             self.drawing = True
             self.current_roi = [x, y, 0, 0]
@@ -151,14 +195,23 @@ class TextRecognition:
             self.current_roi = None
 
     def remove_last_roi(self):
+        """
+        Remove the last ROI from the list of ROIs.
+        """
         if self.rois:
             self.deleted_rois.append(self.rois.pop())
 
     def undo_roi_deletion(self):
+        """
+        Undo the deletion of the last ROI.
+        """
         if self.deleted_rois:
             self.rois.append(self.deleted_rois.pop())
 
     def handle_user_input(self):
+        """
+        Handle user input to control the application.
+        """
         while self.running:
             key = self.event_queue.get()
             if key == ord("q") or key == 27:  # 27 é o valor da tecla ESC
@@ -170,14 +223,29 @@ class TextRecognition:
 
 class VideoCapture:
     def __init__(self, source):
+        """
+        Initialize the VideoCapture object.
+
+        Args:
+            source (str): The video source URL or file path.
+        """
         self.cap = cv2.VideoCapture(source)
         self.width = int(self.cap.get(cv2.CAP_PROP_FRAME_WIDTH))
         self.height = int(self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
 
     def read(self):
+        """
+        Read a frame from the video source.
+
+        Returns:
+            tuple: A tuple containing the status of the read operation and the frame.
+        """
         return self.cap.read()
 
     def release(self):
+        """
+        Release the video capture object.
+        """
         self.cap.release()
 
 if __name__ == "__main__":
