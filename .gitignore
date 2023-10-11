@@ -16,5 +16,6 @@ null
 .vscode
 docs
 *.json
+detected_values.txt
 
 EASY/test.py
