@@ -5,7 +5,6 @@ import json
 import re
 import sys
 from queue import Queue
-import time
 
 class TextRecognition:
     def __init__(self, video_source, language="en"):
@@ -37,7 +36,11 @@ class TextRecognition:
         for i, roi in enumerate(self.rois):
             x, y, w, h = roi
             cropped_frame = frame[y:y + h, x:x + w]
-            results = self.reader.readtext(cropped_frame)
+
+            if cropped_frame is not None and not cropped_frame.size == 0:
+                results = self.reader.readtext(cropped_frame)
+            else:
+                continue  # Skip processing if cropped_frame is empty
 
             roi_info = {}  # Dictionary to store current ROI information
 
@@ -51,7 +54,6 @@ class TextRecognition:
                     lista2.append(i)
 
                 if len(lista2) > 1:
-                    #print(lista2)
                     outuput = {
                         f"{lista2[0]}": lista2[1]
                     }
@@ -103,9 +105,9 @@ class TextRecognition:
         self.last_frame = frame
 
     def print_roi_data(self, roi_data):
-        #for roi_id, data in roi_data.items():
+        #for roi_id, data in roi_data.items:
             #print(f"ROI {roi_id}:")
-            #for label, value in data.items():
+            #for label, value in data.items:
                 #print(f"{label}: {value}")
         ...
 
