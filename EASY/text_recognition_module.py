@@ -13,8 +13,8 @@ class TextRecognition:
         self.rois = []  # List to store ROIs
         self.current_roi = None  # The currently being created ROI
         self.drawing = False  # Flag to indicate if we are drawing an ROI
+        self.deleted_rois = []  # List to store deleted ROIs
         self.running = True  # Flag to indicate if the program is running
-        self.detected_values = []  # List to store detected values
 
     def start(self):
         video_thread = threading.Thread(target=self.video_processing_thread)
@@ -39,9 +39,6 @@ class TextRecognition:
                 if label:
                     roi_info[label] = value
 
-                    # Store detected value in the list
-                    self.detected_values.append(value)
-
                 # Render text detection on the frame within the ROI
                 text_x = x + bbox[0][0]
                 text_y = y + bbox[0][1]
@@ -58,7 +55,8 @@ class TextRecognition:
 
             roi_data[f"ROI_ID {i}"] = roi_info
 
-        print(json.dumps(roi_data, indent=4))
+        # Print ROI data
+        self.print_roi_data(roi_data)
 
         for roi in self.rois:
             x, y, w, h = roi
@@ -82,6 +80,12 @@ class TextRecognition:
 
         self.last_frame = frame
 
+    def print_roi_data(self, roi_data):
+        for roi_id, data in roi_data.items():
+            print(f"ROI {roi_id}:")
+            for label, value in data.items():
+                print(f"{label}: {value}")
+
     def extract_label_and_value(self, text):
         parts = re.split(r'(\d+)', text)
         label = parts[0].strip()
@@ -102,12 +106,11 @@ class TextRecognition:
                 cv2.imshow("Text Recognition", self.last_frame)
 
             key = cv2.waitKey(1) & 0xFF
-            if key == ord("q") or key == 27:  # 27 is the ASCII code for the 'Esc' key
-                self.running = False
 
-            # Verifica se alguma tecla foi pressionada
-            if key != 255:
-                self.on_key_events(key)
+            if key == ord("q"):  # Tecla 'q' para sair
+                self.running = False
+            elif key == ord("d"):  # Tecla 'd' para remover o último ROI
+                self.remove_last_roi()
 
         self.video_capture.release()
         cv2.destroyAllWindows()
@@ -126,20 +129,9 @@ class TextRecognition:
             self.rois.append(tuple(self.current_roi))
             self.current_roi = None
 
-    def on_key_events(self, key):
-        if key == ord("d"):
-            self.remove_last_roi()
-        elif key == 27:  # 27 is the ASCII code for the 'Esc' key
-            self.running = False
-
     def remove_last_roi(self):
         if self.rois:
-            self.rois.pop()
-
-    def export_detected_values(self, filename):
-        with open(filename, 'w') as file:
-            for value in self.detected_values:
-                file.write(f"{value}\n")
+            self.deleted_rois.append(self.rois.pop())
 
 class VideoCapture:
     def __init__(self, source):
@@ -157,7 +149,7 @@ if __name__ == "__main__":
     text_recognition = TextRecognition("http://192.168.0.51:81/stream")
     text_recognition.start()
     while text_recognition.running:
-        pass  # Aguarde até que a tecla "q" ou "Esc" seja pressionada
-
-    text_recognition.export_detected_values("detected_values.txt")
-    sys.exit(0)
+        pass  # Aguarde até que a tecla 'q' seja pressionada
+    text_recognition.video_capture.release()  # Libere o recurso da câmera
+    cv2.destroyAllWindows()  # Feche a janela do OpenCV
+    sys.exit(0)  # Saia do programa adequadamente após a tecla 'q' ser pressionada
