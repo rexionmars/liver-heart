@@ -5,6 +5,7 @@ import json
 import re
 import sys
 from queue import Queue
+import time
 
 class TextRecognition:
     def __init__(self, video_source, language="en"):
@@ -40,8 +41,23 @@ class TextRecognition:
 
             roi_info = {}  # Dictionary to store current ROI information
 
+            lista = []
             for bbox, text, prob in results:
                 label, value = self.extract_label_and_value(text)
+
+                lista.append(text)
+                lista2 = []
+                for i in lista:
+                    lista2.append(i)
+
+                if len(lista2) > 1:
+                    #print(lista2)
+                    outuput = {
+                        f"{lista2[0]}": lista2[1]
+                    }
+
+                    print(json.dumps(outuput, indent=4))
+
                 if label:
                     roi_info[label] = value
 
@@ -61,7 +77,7 @@ class TextRecognition:
 
             roi_data[f"ROI_ID {i}"] = roi_info
 
-        # Print ROI data
+        # Print ROI data, including numeric values
         self.print_roi_data(roi_data)
 
         for roi in self.rois:
@@ -87,10 +103,11 @@ class TextRecognition:
         self.last_frame = frame
 
     def print_roi_data(self, roi_data):
-        for roi_id, data in roi_data.items():
-            print(f"ROI {roi_id}:")
-            for label, value in data.items():
-                print(f"{label}: {value}")
+        #for roi_id, data in roi_data.items():
+            #print(f"ROI {roi_id}:")
+            #for label, value in data.items():
+                #print(f"{label}: {value}")
+        ...
 
     def extract_label_and_value(self, text):
         parts = re.split(r'(\d+)', text)
@@ -165,5 +182,5 @@ if __name__ == "__main__":
     text_recognition = TextRecognition("http://192.168.0.51:81/stream")
     text_recognition.start()
     while text_recognition.running:
-        pass  # Aguarde até que a tecla "q" seja pressionada
+        pass  # Aguarde até que a tecla "q" ou "ESC" seja pressionada
     sys.exit(0)  # Saia do programa adequadamente após a tecla "q" ou "ESC" ser pressionada
