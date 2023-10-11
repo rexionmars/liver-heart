@@ -4,6 +4,7 @@ import threading
 import json
 import re
 import sys
+from queue import Queue
 
 class TextRecognition:
     def __init__(self, video_source, language="en"):
@@ -16,9 +17,14 @@ class TextRecognition:
         self.deleted_rois = []  # List to store deleted ROIs
         self.running = True  # Flag to indicate if the program is running
 
+        # Create a queue to handle user events
+        self.event_queue = Queue()
+
     def start(self):
         video_thread = threading.Thread(target=self.video_processing_thread)
         video_thread.start()
+        user_input_thread = threading.Thread(target=self.handle_user_input)
+        user_input_thread.start()
         self.display_window()
 
     def read_text(self, frame):
@@ -106,11 +112,7 @@ class TextRecognition:
                 cv2.imshow("Text Recognition", self.last_frame)
 
             key = cv2.waitKey(1) & 0xFF
-
-            if key == ord("q"):  # Tecla 'q' para sair
-                self.running = False
-            elif key == ord("d"):  # Tecla 'd' para remover o último ROI
-                self.remove_last_roi()
+            self.event_queue.put(key)
 
         self.video_capture.release()
         cv2.destroyAllWindows()
@@ -133,6 +135,20 @@ class TextRecognition:
         if self.rois:
             self.deleted_rois.append(self.rois.pop())
 
+    def undo_roi_deletion(self):
+        if self.deleted_rois:
+            self.rois.append(self.deleted_rois.pop())
+
+    def handle_user_input(self):
+        while self.running:
+            key = self.event_queue.get()
+            if key == ord("q") or key == 27:  # 27 é o valor da tecla ESC
+                self.running = False
+            elif key == ord("d"):
+                self.remove_last_roi()
+            elif key == ord("u"):
+                self.undo_roi_deletion()
+
 class VideoCapture:
     def __init__(self, source):
         self.cap = cv2.VideoCapture(source)
@@ -149,7 +165,5 @@ if __name__ == "__main__":
     text_recognition = TextRecognition("http://192.168.0.51:81/stream")
     text_recognition.start()
     while text_recognition.running:
-        pass  # Aguarde até que a tecla 'q' seja pressionada
-    text_recognition.video_capture.release()  # Libere o recurso da câmera
-    cv2.destroyAllWindows()  # Feche a janela do OpenCV
-    sys.exit(0)  # Saia do programa adequadamente após a tecla 'q' ser pressionada
+        pass  # Aguarde até que a tecla "q" seja pressionada
+    sys.exit(0)  # Saia do programa adequadamente após a tecla "q" ou "ESC" ser pressionada
