@@ -2,35 +2,12 @@ import cv2
 import easyocr
 import json
 import re
-
 import sys
-import threading
+import concurrent.futures
 from queue import Queue
 
 class TextRecognition:
-    """
-    A class for performing text recognition in a video stream.
-
-    Attributes:
-        reader (easyocr.Reader): An EasyOCR reader for text recognition.
-        video_capture (VideoCapture): A VideoCapture object for accessing the video source.
-        last_frame (numpy.ndarray): The last processed video frame.
-        rois (list of tuples): A list of regions of interest (ROIs) defined by rectangles.
-        current_roi (tuple or None): The currently being created ROI.
-        drawing (bool): A flag to indicate if an ROI is being drawn.
-        deleted_rois (list of tuples): A list to store deleted ROIs.
-        running (bool): A flag to indicate if the program is running.
-        event_queue (Queue): A queue to handle user input events.
-    """
-
     def __init__(self, video_source, language="en"):
-        """
-        Initialize the TextRecognition instance.
-
-        Args:
-            video_source (str): The video source URL or file path.
-            language (str, optional): The language for text recognition (default is "en").
-        """
         self.reader = easyocr.Reader([language])
         self.video_capture = VideoCapture(video_source)
         self.last_frame = None
@@ -42,22 +19,14 @@ class TextRecognition:
         self.event_queue = Queue()
 
     def start(self):
-        """
-        Start the text recognition process in separate threads.
-        """
-        video_thread = threading.Thread(target=self.video_processing_thread)
-        video_thread.start()
-        user_input_thread = threading.Thread(target=self.handle_user_input)
-        user_input_thread.start()
-        self.display_window()
+        with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
+            video_thread = executor.submit(self.video_processing_thread)
+            user_input_thread = executor.submit(self.handle_user_input)
+            self.display_window()
+            video_thread.result()
+            user_input_thread.result()
 
     def read_text(self, frame):
-        """
-        Perform text recognition on the input video frame.
-
-        Args:
-            frame (numpy.ndarray): The input video frame.
-        """
         if frame is None:
             return
 
@@ -77,9 +46,6 @@ class TextRecognition:
                 if label:
                     if label not in roi_info:
                         roi_info[label] = []
-                else:
-                    # Handle the case when label is empty or None
-                    ...
 
                 text_x = x + bbox[0][0]
                 text_y = y + bbox[0][1]
@@ -109,42 +75,21 @@ class TextRecognition:
         self.last_frame = frame
 
     def print_roi_data(self, roi_data):
-        """
-        Print the ROI data, including numeric values, to the console.
-
-        Args:
-            roi_data (dict): A dictionary containing ROI data.
-        """
         # Your code to print ROI data goes here
         pass
 
     def extract_label_and_value(self, text):
-        """
-        Extract the label and value from a text string.
-
-        Args:
-            text (str): The input text string.
-
-        Returns:
-            tuple: A tuple containing the label (str) and value (str or None).
-        """
         parts = re.split(r"(\d+)", text)
         label = parts[0].strip()
         value = parts[1].strip() if len(parts) > 1 else None
         return label, value
 
     def video_processing_thread(self):
-        """
-        Thread to process the video frames and perform text recognition.
-        """
         while self.running:
             ret, frame = self.video_capture.read()
             self.read_text(frame)
 
     def display_window(self):
-        """
-        Display the video stream window and handle user events.
-        """
         cv2.namedWindow("Text Recognition")
         cv2.setMouseCallback("Text Recognition", self.on_mouse_events)
 
@@ -159,16 +104,6 @@ class TextRecognition:
         cv2.destroyAllWindows()
 
     def on_mouse_events(self, event, x, y, flags, param):
-        """
-        Handle mouse events, such as drawing ROIs.
-
-        Args:
-            event (int): The event type.
-            x (int): The x-coordinate of the event.
-            y (int): The y-coordinate of the event.
-            flags (int): Flags associated with the event.
-            param: Additional parameters.
-        """
         if event == cv2.EVENT_LBUTTONDOWN:
             self.drawing = True
             self.current_roi = [x, y, 0, 0]
@@ -183,23 +118,14 @@ class TextRecognition:
             self.current_roi = None
 
     def remove_last_roi(self):
-        """
-        Remove the last ROI from the list of ROIs.
-        """
         if self.rois:
             self.deleted_rois.append(self.rois.pop())
 
     def undo_roi_deletion(self):
-        """
-        Undo the previous ROI deletion by restoring the last deleted ROI.
-        """
         if self.deleted_rois:
             self.rois.append(self.deleted_rois.pop())
 
     def handle_user_input(self):
-        """
-        Handle user input events, such as quitting or modifying ROIs.
-        """
         while self.running:
             key = self.event_queue.get()
             if key == ord("q") or key == 27:  # 27 is the ESC key
@@ -210,39 +136,15 @@ class TextRecognition:
                 self.undo_roi_deletion()
 
 class VideoCapture:
-    """
-    A class for video capture from a source.
-
-    Attributes:
-        cap: The OpenCV video capture object.
-        width (int): The width of the video frames.
-        height (int): The height of the video frames.
-    """
-
     def __init__(self, source):
-        """
-        Initialize the VideoCapture instance.
-
-        Args:
-            source (str): The video source URL or file path.
-        """
         self.cap = cv2.VideoCapture(source)
         self.width = int(self.cap.get(cv2.CAP_PROP_FRAME_WIDTH))
         self.height = int(self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
 
     def read(self):
-        """
-        Read and retrieve a frame from the video source.
-
-        Returns:
-            tuple: A tuple containing a boolean indicating success and the video frame (numpy.ndarray).
-        """
         return self.cap.read()
 
     def release(self):
-        """
-        Release the video capture object.
-        """
         self.cap.release()
 
 if __name__ == "__main__":
