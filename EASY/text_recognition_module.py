@@ -1,20 +1,15 @@
-import cv2
-import easyocr
-import threading
 import json
 import re
 import sys
+import threading
 from queue import Queue
+
+import cv2
+import easyocr
+
 
 class TextRecognition:
     def __init__(self, video_source, language="en"):
-        """
-        Initialize the TextRecognition object.
-
-        Args:
-            video_source (str): The video source URL or file path.
-            language (str): The language for text recognition (default is "en" for English).
-        """
         self.reader = easyocr.Reader([language])
         self.video_capture = VideoCapture(video_source)
         self.last_frame = None
@@ -28,9 +23,6 @@ class TextRecognition:
         self.event_queue = Queue()
 
     def start(self):
-        """
-        Start the text recognition process and display the video window.
-        """
         video_thread = threading.Thread(target=self.video_processing_thread)
         video_thread.start()
         user_input_thread = threading.Thread(target=self.handle_user_input)
@@ -38,14 +30,10 @@ class TextRecognition:
         self.display_window()
 
     def read_text(self, frame):
-        """
-        Process and read text from a given frame.
-
-        Args:
-            frame (numpy.ndarray): The frame to process and read text from.
-        """
         if frame is None:
             return
+
+
 
         roi_data = {}  # Dictionary to store ROI data
 
@@ -55,108 +43,79 @@ class TextRecognition:
             results = self.reader.readtext(cropped_frame)
 
             roi_info = {}  # Dictionary to store current ROI information
+            list_value = []  # List to store values in this ROI
 
-            lista = []
             for bbox, text, prob in results:
                 label, value = self.extract_label_and_value(text)
-
-                lista.append(text)
-                lista2 = []
-                for i in lista:
-                    lista2.append(i)
-
-                if len(lista2) > 1:
-                    outuput = {
-                        f"{lista2[0]}": lista2[1]
-                    }
-
-                    print(json.dumps(outuput, indent=4))
+                list_value.append(value)
 
                 if label:
-                    roi_info[label] = value
+                    if label not in roi_info:
+                        roi_info[label] = []  # Cria uma lista temporária se ela ainda não existir
+                else:
+                    # Processamento para o caso em que label é vazio ou None
+                    ...
 
                 # Render text detection on the frame within the ROI
                 text_x = x + bbox[0][0]
                 text_y = y + bbox[0][1]
                 cv2.rectangle(frame, (text_x, text_y), (x + bbox[2][0], y + bbox[2][1]), (0, 255, 0), 1)
-                cv2.putText(
-                    frame,
-                    text,
-                    (text_x, text_y - 10),
-                    cv2.FONT_HERSHEY_SIMPLEX,
-                    0.5,
-                    (0, 255, 0),
-                    1,
-                )
+                cv2.putText(frame, text, (text_x, text_y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1)
 
+            filtered_values = [item for item in list_value if item is not None]
+            filtered_values = [int(item) for item in filtered_values]
+
+            for label, values in roi_info.items():
+                values.extend(filtered_values)  # Adiciona os valores filtrados à lista temporária
+
+            # Use f"ROI_ID {i}" como a chave para cada ROI
             roi_data[f"ROI_ID {i}"] = roi_info
+
+        print(json.dumps(roi_data, indent=4))
+
+
+
+
+
+
+
+
 
         # Print ROI data, including numeric values
         self.print_roi_data(roi_data)
 
         for roi in self.rois:
             x, y, w, h = roi
-            cv2.rectangle(
-                frame,
-                (x, y),
-                (x + w, y + h),
-                (214, 102, 3),
-                1,
-            )
+            cv2.rectangle(frame, (x, y), (x + w, y + h), (214, 102, 3), 1, )
 
         if self.current_roi is not None:
             x, y, w, h = self.current_roi
-            cv2.rectangle(
-                frame,
-                (x, y),
-                (x + w, y + h),
-                (129, 23, 255),
-                1,
-            )
+            cv2.rectangle(frame, (x, y), (x + w, y + h), (129, 23, 255), 1, )
 
         self.last_frame = frame
 
     def print_roi_data(self, roi_data):
-        """
-        Print ROI data in the specified format.
-
-        Args:
-            roi_data (dict): Dictionary containing ROI data.
-        """
         # for roi_id, data in roi_data.items():
-            # print(f"ROI {roi_id}:")
-            # for label, value in data.items():
-                # print(f"{label}: {value}")
-        ...
+        # print(f"ROI {roi_id}:")
+        # for label, value in data.items():
+        # if isinstance(value, list):
+        # print(f"{label}: {value}")
+        # else:
+        # print(f"{label}: {value if value else 'None'}")
+        pass
 
     def extract_label_and_value(self, text):
-        """
-        Extract the label and value from a given text.
-
-        Args:
-            text (str): The text to extract label and value from.
-
-        Returns:
-            str: The label extracted from the text.
-            str: The value extracted from the text.
-        """
-        parts = re.split(r'(\d+)', text)
+        parts = re.split(r"(\d+)", text)
         label = parts[0].strip()
         value = parts[1].strip() if len(parts) > 1 else None
         return label, value
 
     def video_processing_thread(self):
-        """
-        Process video frames for text recognition.
-        """
         while self.running:
             ret, frame = self.video_capture.read()
             self.read_text(frame)
 
     def display_window(self):
-        """
-        Display the video window for text recognition.
-        """
         cv2.namedWindow("Text Recognition")
         cv2.setMouseCallback("Text Recognition", self.on_mouse_events)
 
@@ -171,16 +130,6 @@ class TextRecognition:
         cv2.destroyAllWindows()
 
     def on_mouse_events(self, event, x, y, flags, param):
-        """
-        Handle mouse events for ROI selection.
-
-        Args:
-            event: The type of mouse event.
-            x: The x-coordinate of the event.
-            y: The y-coordinate of the event.
-            flags: Event-specific flags.
-            param: Additional parameters.
-        """
         if event == cv2.EVENT_LBUTTONDOWN:
             self.drawing = True
             self.current_roi = [x, y, 0, 0]
@@ -195,23 +144,14 @@ class TextRecognition:
             self.current_roi = None
 
     def remove_last_roi(self):
-        """
-        Remove the last ROI from the list of ROIs.
-        """
         if self.rois:
             self.deleted_rois.append(self.rois.pop())
 
     def undo_roi_deletion(self):
-        """
-        Undo the deletion of the last ROI.
-        """
         if self.deleted_rois:
             self.rois.append(self.deleted_rois.pop())
 
     def handle_user_input(self):
-        """
-        Handle user input to control the application.
-        """
         while self.running:
             key = self.event_queue.get()
             if key == ord("q") or key == 27:  # 27 é o valor da tecla ESC
@@ -221,32 +161,19 @@ class TextRecognition:
             elif key == ord("u"):
                 self.undo_roi_deletion()
 
+
 class VideoCapture:
     def __init__(self, source):
-        """
-        Initialize the VideoCapture object.
-
-        Args:
-            source (str): The video source URL or file path.
-        """
         self.cap = cv2.VideoCapture(source)
         self.width = int(self.cap.get(cv2.CAP_PROP_FRAME_WIDTH))
         self.height = int(self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
 
     def read(self):
-        """
-        Read a frame from the video source.
-
-        Returns:
-            tuple: A tuple containing the status of the read operation and the frame.
-        """
         return self.cap.read()
 
     def release(self):
-        """
-        Release the video capture object.
-        """
         self.cap.release()
+
 
 if __name__ == "__main__":
     text_recognition = TextRecognition("http://192.168.0.51:81/stream")
