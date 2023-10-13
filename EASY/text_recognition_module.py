@@ -53,7 +53,7 @@ class TextRecognition:
                 cv2.putText(frame, text, (text_x, text_y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1)
 
             filtered_values = [item for item in list_value if item is not None]
-            filtered_values = [int(item) for item in filtered_values]
+            filtered_values = [float(item) for item in filtered_values]
 
             for label, values in roi_info.items():
                 values.extend(filtered_values)
