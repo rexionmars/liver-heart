@@ -1,0 +1,3 @@
+/home/leonardi/dev/local/CameraWebServer/cmake-build-debug/CMakeFiles/CameraWebServer.dir
+/home/leonardi/dev/local/CameraWebServer/cmake-build-debug/CMakeFiles/edit_cache.dir
+/home/leonardi/dev/local/CameraWebServer/cmake-build-debug/CMakeFiles/rebuild_cache.dir
