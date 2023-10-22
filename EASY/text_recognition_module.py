@@ -29,7 +29,6 @@ class TextRecognition:
     def read_text(self, frame):
         if frame is None:
             return
-
         roi_data = {}
         for i, roi in enumerate(self.rois):
             x, y, w, h = roi
@@ -148,7 +147,8 @@ class VideoCapture:
         self.cap.release()
 
 if __name__ == "__main__":
-    text_recognition = TextRecognition("http://192.168.0.51:81/stream")
+    #text_recognition = TextRecognition("http://192.168.0.51:81/stream")
+    text_recognition = TextRecognition("http://192.168.0.38:81/stream") #OV2640
     text_recognition.start()
     while text_recognition.running:
         pass  # Wait until the "q" or "ESC" key is pressed
