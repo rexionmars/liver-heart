@@ -1,5 +1,10 @@
 #include "esp_camera.h"
 #include <WiFi.h>
+#include <Wire.h>
+#include "SSD1306.h"
+
+// Display
+SSD1306 display(0x3c, 14, 15); // SDA, SCL;
 
 //
 // WARNING!!! PSRAM IC required for UXGA resolution and high JPEG quality
@@ -35,13 +40,22 @@
 // ===========================
 // Enter your WiFi credentials
 // ===========================
-const char* ssid = "1990 2.4Ghz";
-const char* password = "20031985";
+const char* ssid = "PROFESSORES - CEV";
+const char* password = "osmelhores";
 
 void startCameraServer();
 void setupLedFlash(int pin);
 
 void setup() {
+  // Inicialize o display OLED
+  display.init();
+  display.setFont(ArialMT_Plain_10);
+  display.setTextAlignment(TEXT_ALIGN_LEFT);
+  display.flipScreenVertically();
+  display.clear();
+
+  
+  
   Serial.begin(115200);
   Serial.setDebugOutput(true);
   Serial.println();
@@ -103,6 +117,9 @@ void setup() {
   esp_err_t err = esp_camera_init(&config);
   if (err != ESP_OK) {
     Serial.printf("Camera init failed with error 0x%x", err);
+    display.clear();
+    display.drawString(0, 0, "Camera init failed with error 0x%x");
+    display.display();
     return;
   }
 
@@ -143,6 +160,17 @@ void setup() {
   Serial.println("WiFi connected");
 
   startCameraServer();
+
+  // Exiba as informações no display OLED
+  display.clear();
+  display.drawString(0, 0, "Camera Ready!");
+  display.drawString(0, 20, "IP Address:");
+  display.drawString(60, 20, WiFi.localIP().toString());
+  display.display();
+
+//  Serial.print("Camera Ready! Use 'http://");
+//  Serial.print(WiFi.localIP());
+//  Serial.println("' to connect");
 
   Serial.print("Camera Ready! Use 'http://");
   Serial.print(WiFi.localIP());
