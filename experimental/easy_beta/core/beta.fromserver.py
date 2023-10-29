@@ -4,19 +4,22 @@ import json
 import re
 import sys
 import concurrent.futures
+import requests
+
 from queue import Queue
 
 class TextRecognition:
-    def __init__(self, video_source, language="en"):
+    def __init__(self, video_source: str, server_url, language="en"):
         self.reader = easyocr.Reader([language])
         self.video_capture = VideoCapture(video_source)
-        self.last_frame = None
         self.rois = []
-        self.current_roi = None
-        self.drawing = False
         self.deleted_rois = []
-        self.running = True
         self.event_queue = Queue()
+        self.drawing = False
+        self.running = True
+        self.last_frame = None
+        self.current_roi = None
+        self.server_url = server_url
 
     def start(self):
         with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
@@ -59,7 +62,18 @@ class TextRecognition:
 
             roi_data[f"ROI_ID {i}"] = roi_info
 
+        #print(json.dumps(roi_data, indent=4))
+        response = requests.post(self.server_url, json=roi_data)
+
         self.print_roi_data(roi_data)
+
+        for roi in self.rois:
+            x, y, w, h = roi
+            cv2.rectangle(frame, (x, y), (x + w, y + h), (214, 102, 3), 1)
+
+        if self.current_roi is not None:
+            x, y, w, h = self.current_roi
+            cv2.rectangle(frame, (x, y), (x + w, y + h), (129, 23, 255), 1)
 
         self.last_frame = frame
 
@@ -136,8 +150,10 @@ class VideoCapture:
     def release(self):
         self.cap.release()
 
-if __name__ == "__main":
-    text_recognition = TextRecognition("http://192.168.0.38:81/stream")  # OV2640
+if __name__ == "__main__":
+    #text_recognition = TextRecognition("http://192.168.0.51:81/stream")
+    server = "http://127.0.0.1:5000/receive_data"
+    text_recognition = TextRecognition("http://192.168.0.38:81/stream", server_url=server) #OV2640
     text_recognition.start()
     while text_recognition.running:
         pass  # Wait until the "q" or "ESC" key is pressed
