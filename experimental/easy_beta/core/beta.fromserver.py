@@ -65,6 +65,12 @@ class TextRecognition:
         #print(json.dumps(roi_data, indent=4))
         response = requests.post(self.server_url, json=roi_data)
 
+        if response.status_code == 200:
+            #print("Dados enviados com sucesso para o servidor.")
+            pass
+        else:
+            print("Erro ao enviar os dados para o servidor. Código de status:", response.status_code)
+
         self.print_roi_data(roi_data)
 
         for roi in self.rois:
@@ -152,7 +158,7 @@ class VideoCapture:
 
 if __name__ == "__main__":
     #text_recognition = TextRecognition("http://192.168.0.51:81/stream")
-    server = "http://127.0.0.1:5000/receive_data"
+    server = "http://127.0.0.1:8080/receive_data"
     text_recognition = TextRecognition("http://192.168.0.38:81/stream", server_url=server) #OV2640
     text_recognition.start()
     while text_recognition.running:
