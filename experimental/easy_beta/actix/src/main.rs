@@ -1,56 +1,50 @@
-use actix_web::{web, App, HttpResponse, HttpServer, Responder};
-use serde::{Deserialize, Serialize};
-use std::sync::{Mutex, Arc};
+use actix_web::{web, App, HttpResponse, HttpServer, Responder, Error};
+use std::sync::{Arc, Mutex};
 
-// Estrutura de dados para receber dados do OCR
-#[derive(Debug, Serialize, Deserialize, Clone)]
-struct OcrData {
-    // Defina as estruturas de dados conforme a estrutura do JSON que você espera do OCR
-    roi_data: String,  // Altere o tipo de acordo com sua estrutura
-}
-
-// Estado compartilhado entre as rotas
 struct AppState {
-    received_data: Mutex<Vec<OcrData>,
+    received_data: Arc<Mutex<Option<serde_json::Value>>>,
 }
 
-// Rota para receber dados JSON do OCR
-async fn receive_data(data: web::Json<OcrData>, app_state: web::Data<AppState>) -> impl Responder {
-    let received_data = &app_state.received_data;
-    
-    // Bloqueia o Mutex para adicionar os dados recebidos
-    let mut received_data = received_data.lock().expect("Falha ao obter o Mutex");
-    received_data.push(data.into_inner());
+async fn receive_data(data: web::Json<serde_json::Value>, app_state: web::Data<AppState>) -> impl Responder {
+    let mut received_data = app_state.received_data.lock().unwrap();
+    *received_data = Some(data.0.clone());
 
-    HttpResponse::Ok().body("Dados recebidos com sucesso!")
+    // Envia uma resposta de sucesso (200 OK) para a solicitação POST
+    HttpResponse::Ok()
+        .body("Dados recebidos com sucesso!")
 }
 
-// Rota para recuperar os dados recebidos
-async fn get_received_data(app_state: web::Data<AppState>) -> impl Responder {
-    let received_data = &app_state.received_data;
-    
-    // Bloqueia o Mutex para obter os dados recebidos
-    let received_data = received_data.lock().expect("Falha ao obter o Mutex");
-    
-    if received_data.is_empty() {
-        HttpResponse::NotFound().body("Nenhum dado recebido ainda.")
-    } else {
-        HttpResponse::Ok().json(received_data.clone())
+async fn get_received_data(app_state: web::Data<AppState>) -> Result<HttpResponse, Error> {
+    let received_data = app_state.received_data.lock().unwrap();
+
+    match &*received_data {
+        Some(data) => {
+            // Converte o JSON para uma string
+            let json_string = serde_json::to_string(data).unwrap();
+            
+            // Envia o JSON como resposta
+            Ok(HttpResponse::Ok()
+                .content_type("application/json")
+                .body(json_string))
+        },
+        None => {
+            // Se nenhum dado foi recebido ainda
+            Ok(HttpResponse::NotFound().body("Nenhum dado recebido ainda."))
+        }
     }
 }
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
-    // Cria uma instância de estado compartilhado
     let app_state = web::Data::new(AppState {
-        received_data: Mutex::new(Vec::new()),
+        received_data: Arc::new(Mutex::new(None)),
     });
-    
+
     HttpServer::new(move || {
         App::new()
-            .app_data(app_state.clone()) // Compartilha o estado com todas as funções
-            .service(web::resource("/receive_data").route(web::post().to(receive_data))
-            .service(web::resource("/get_received_data").route(web::get().to(get_received_data))
+            .app_data(app_state.clone())
+            .service(web::resource("/receive_data").route(web::post().to(receive_data)))
+            .service(web::resource("/get_received_data").route(web::get().to(get_received_data)))
     })
     .bind("127.0.0.1:8080")?
     .run()
