@@ -2,34 +2,38 @@ import cv2
 import easyocr
 import json
 import re
-
 import sys
-import threading
+import concurrent.futures
+import requests
+import os
+import time
+
 from queue import Queue
 
 class TextRecognition:
-    def __init__(self, video_source, language="en"):
+    def __init__(self, video_source: str, server_url, language="en"):
         self.reader = easyocr.Reader([language])
         self.video_capture = VideoCapture(video_source)
-        self.last_frame = None
         self.rois = []
-        self.current_roi = None
-        self.drawing = False
         self.deleted_rois = []
-        self.running = True
         self.event_queue = Queue()
+        self.drawing = False
+        self.running = True
+        self.last_frame = None
+        self.current_roi = None
+        self.server_url = server_url
 
     def start(self):
-        video_thread = threading.Thread(target=self.video_processing_thread)
-        video_thread.start()
-        user_input_thread = threading.Thread(target=self.handle_user_input)
-        user_input_thread.start()
-        self.display_window()
+        with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
+            video_thread = executor.submit(self.video_processing_thread)
+            user_input_thread = executor.submit(self.handle_user_input)
+            self.display_window()
+            video_thread.result()
+            user_input_thread.result()
 
     def read_text(self, frame):
         if frame is None:
             return
-
         roi_data = {}
         for i, roi in enumerate(self.rois):
             x, y, w, h = roi
@@ -46,9 +50,6 @@ class TextRecognition:
                 if label:
                     if label not in roi_info:
                         roi_info[label] = []
-                else:
-                    # Handle the case when label is empty or None
-                    ...
 
                 text_x = x + bbox[0][0]
                 text_y = y + bbox[0][1]
@@ -56,14 +57,21 @@ class TextRecognition:
                 cv2.putText(frame, text, (text_x, text_y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1)
 
             filtered_values = [item for item in list_value if item is not None]
-            filtered_values = [int(item) for item in filtered_values]
+            filtered_values = [float(item) for item in filtered_values]
 
             for label, values in roi_info.items():
                 values.extend(filtered_values)
 
             roi_data[f"ROI_ID {i}"] = roi_info
 
-        print(json.dumps(roi_data, indent=4))
+        #print(json.dumps(roi_data, indent=4))
+        response = requests.post(self.server_url, json=roi_data)
+
+        if response.status_code == 200:
+            #print("Dados enviados com sucesso para o servidor.")
+            pass
+        else:
+            print("Erro ao enviar os dados para o servidor. Código de status:", response.status_code)
 
         self.print_roi_data(roi_data)
 
@@ -125,7 +133,6 @@ class TextRecognition:
             self.deleted_rois.append(self.rois.pop())
 
     def undo_roi_deletion(self):
-
         if self.deleted_rois:
             self.rois.append(self.deleted_rois.pop())
 
@@ -152,7 +159,9 @@ class VideoCapture:
         self.cap.release()
 
 if __name__ == "__main__":
-    text_recognition = TextRecognition("http://192.168.0.51:81/stream")
+    #text_recognition = TextRecognition("http://192.168.0.51:81/stream")
+    server = "https://liveheart-global-end-point.onrender.com/receive_data"
+    text_recognition = TextRecognition("http://192.168.0.38:81/stream", server_url=server) #OV2640
     text_recognition.start()
     while text_recognition.running:
         pass  # Wait until the "q" or "ESC" key is pressed

@@ -19,3 +19,4 @@ docs
 detected_values.txt
 
 EASY/test.py
+experimental/easy_beta/actix/target/*
