@@ -4,7 +4,7 @@
 #include "SSD1306.h"
 
 // Display
-SSD1306 display(0x3c, 14, 15); // SDA, SCL;
+SSD1306 display(0x3c, 14, 15);  // SDA, SCL;
 
 //
 // WARNING!!! PSRAM IC required for UXGA resolution and high JPEG quality
@@ -18,23 +18,7 @@ SSD1306 display(0x3c, 14, 15); // SDA, SCL;
 // ===================
 // Select camera model
 // ===================
-//#define CAMERA_MODEL_WROVER_KIT // Has PSRAM
-//#define CAMERA_MODEL_ESP_EYE // Has PSRAM
-//#define CAMERA_MODEL_ESP32S3_EYE // Has PSRAM
-//#define CAMERA_MODEL_M5STACK_PSRAM // Has PSRAM
-//#define CAMERA_MODEL_M5STACK_V2_PSRAM // M5Camera version B Has PSRAM
-//#define CAMERA_MODEL_M5STACK_WIDE // Has PSRAM
-//#define CAMERA_MODEL_M5STACK_ESP32CAM // No PSRAM
-//#define CAMERA_MODEL_M5STACK_UNITCAM // No PSRAM
 #define CAMERA_MODEL_AI_THINKER // Has PSRAM
-//#define CAMERA_MODEL_TTGO_T_JOURNAL // No PSRAM
-//#define CAMERA_MODEL_XIAO_ESP32S3 // Has PSRAM
-// ** Espressif Internal Boards **
-//#define CAMERA_MODEL_ESP32_CAM_BOARD
-//#define CAMERA_MODEL_ESP32S2_CAM_BOARD
-//#define CAMERA_MODEL_ESP32S3_CAM_LCD
-//#define CAMERA_MODEL_DFRobot_FireBeetle2_ESP32S3 // Has PSRAM
-//#define CAMERA_MODEL_DFRobot_Romeo_ESP32S3 // Has PSRAM
 #include "camera_pins.h"
 
 // ===========================
@@ -54,8 +38,6 @@ void setup() {
   display.flipScreenVertically();
   display.clear();
 
-  
-  
   Serial.begin(115200);
   Serial.setDebugOutput(true);
   Serial.println();
@@ -158,6 +140,7 @@ void setup() {
   }
   Serial.println("");
   Serial.println("WiFi connected");
+  display.drawString(0, 20, "WiFi connected");
 
   startCameraServer();
 
@@ -166,6 +149,7 @@ void setup() {
   display.drawString(0, 0, "Camera Ready!");
   display.drawString(0, 20, "IP Address:");
   display.drawString(60, 20, WiFi.localIP().toString());
+  display.drawString(0, 40, "By RexiOnMars on iCev");
   display.display();
 
 //  Serial.print("Camera Ready! Use 'http://");
