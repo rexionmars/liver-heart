@@ -10,16 +10,16 @@ Email: francisco.vieira@somosicev.com
   <h1 align=center>LIVE HEART</h1>
   <p align=center>Real-time embedded software for optical character recognition (OCR) on hospital monitors and providing the data to an API.</p>
 </div>
-<img src="thumbnail-git/logo.jpg" alt="Snake logo">
+<img src="images/logo.jpg" alt="Snake logo">
 <!--
 ## OCR Basic Archtecture
 <img src="thumbnail-git/ocr.png" alt="Snake logo">
 
 ## Basic Multithread Archtecture
-<img src="thumbnail-git/arch.png" alt="Snake logo">
+<img src="images/arch.png" alt="Snake logo">
 
 ## Basic Archtecture API
-<img src="thumbnail-git/api.png" alt="Snake logo">
+<img src="images/api.png" alt="Snake logo">
 -->
 This software is in the early stages of development and currently does not have any documentation or demonstration of its usage. Please stay tuned for more information as the project progresses.
 
@@ -27,10 +27,10 @@ This software is in the early stages of development and currently does not have 
 ## Keras OCR
 <br>Check the results at: https://github.com/rexionmars/liver-heart/tree/master/xresults
 
-<img src="thumbnail-git/keras.jpg" alt="Snake logo">
+<img src="images/keras.jpg" alt="Snake logo">
 
 ## Embedded Platform
-<img src="thumbnail-git/platform.png" alt="Snake logo">
+<img src="images/platform.png" alt="Snake logo">
 
 ## Main characteristics 🔍
 - [x] Easy use
