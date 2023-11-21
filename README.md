@@ -20,7 +20,6 @@ Email: francisco.vieira@somosicev.com
 
 ## Basic Archtecture API
 <img src="images/api.png" alt="Snake logo">
--->
 This software is in the early stages of development and currently does not have any documentation or demonstration of its usage. Please stay tuned for more information as the project progresses.
 
 
@@ -31,6 +30,7 @@ This software is in the early stages of development and currently does not have 
 
 ## Embedded Platform
 <img src="images/platform.png" alt="Snake logo">
+-->
 
 ## Main characteristics 🔍
 - [x] Easy use
