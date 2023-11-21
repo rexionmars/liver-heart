@@ -10,7 +10,7 @@ Email: francisco.vieira@somosicev.com
   <h1 align=center>LIVE HEART</h1>
   <p align=center>Real-time embedded software for optical character recognition (OCR) on hospital monitors and providing the data to an API.</p>
 </div>
-<img src="images/logo.jpg" alt="Snake logo">
+<img src="images/live-nurse-logo.jpg" alt="Snake logo">
 <!--
 ## OCR Basic Archtecture
 <img src="thumbnail-git/ocr.png" alt="Snake logo">
