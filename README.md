@@ -50,3 +50,7 @@ This software is in the early stages of development and currently does not have 
 🔴 Low accuracy in optical character recognition (OCR)<br>
 🔴 [**Raspberry PI 3**] Tested only on **ARM Cortex-A53-based** architecture
 
+## Extended Repos
+https://github.com/rexionmars/Live-Nurse-Platform
+https://github.com/rexionmars/Live-Nurse-Docs
+
