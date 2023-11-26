@@ -43,12 +43,7 @@ This software is in the early stages of development and currently does not have 
 - [x] Raspberry PI 3
 - [x] ARM Cortex
 - [x] Espressif
-## Current limitations ⚠️
-🟡 Only the English text detection has a 75% accuracy rate<br>
-🟡 Parameter customization only via command-line<br>
-🔴 High processing consumption, even with multi-threading<br>
-🔴 Low accuracy in optical character recognition (OCR)<br>
-🔴 [**Raspberry PI 3**] Tested only on **ARM Cortex-A53-based** architecture
+
 
 ## Extended Repos
 https://github.com/rexionmars/Live-Nurse-Platform
