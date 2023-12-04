@@ -17,6 +17,7 @@ null
 docs
 *.json
 detected_values.txt
-
+xresults
+ROS_Platform/cam/CameraWebServer/cmake-build-debug/*
 EASY/test.py
 experimental/beta/actix/target/*
