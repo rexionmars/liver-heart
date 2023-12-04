@@ -1,3 +1,6 @@
+"""
+This code as been formated using Black code style
+"""
 import cv2
 import easyocr
 import json
@@ -10,7 +13,11 @@ import time
 
 from queue import Queue
 
+
 class TextRecognition:
+    """
+    This class provides commons functions for text recognition.
+    """
     def __init__(self, video_source: str, server_url, language="en"):
         self.reader = easyocr.Reader([language])
         self.video_capture = VideoCapture(video_source)
@@ -24,6 +31,14 @@ class TextRecognition:
         self.server_url = server_url
 
     def start(self):
+        """
+        This functions is called from start OCR engine.
+        
+        Args:
+            None
+        Returns:
+            None
+        """
         with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
             video_thread = executor.submit(self.video_processing_thread)
             user_input_thread = executor.submit(self.handle_user_input)
@@ -31,7 +46,16 @@ class TextRecognition:
             video_thread.result()
             user_input_thread.result()
 
+
     def read_text(self, frame):
+        """
+        This functions is called for read text from EasyOCR
+
+        Args:
+            frame (nd.array):
+        Returns:
+            None
+        """
         if frame is None:
             return
         roi_data = {}
