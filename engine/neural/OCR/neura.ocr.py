@@ -39,7 +39,7 @@ class TextRecognition:
         Returns:
             None
         """
-        with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
+        with concurrent.futures.ThreadPoolExecutor(max_workers=8) as executor:
             video_thread = executor.submit(self.video_processing_thread)
             user_input_thread = executor.submit(self.handle_user_input)
             self.display_window()
