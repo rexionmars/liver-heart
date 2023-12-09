@@ -7,7 +7,7 @@ Email: francisco.vieira@somosicev.com
 ```
 
 <div align=center>
-  <h1 align=center>LIVE HEART</h1>
+  <h1 align=center>AuRA</h1>
   <p align=center>Real-time embedded software for optical character recognition (OCR) on hospital monitors and providing the data to an API.</p>
 </div>
 <img src="images/live-nurse-logo.jpg" alt="Snake logo">
