@@ -1,3 +1,4 @@
+// Library for displat oled 128x64 pixels
 #include "SSD1306.h"
 
 // Configurações do display
@@ -12,7 +13,10 @@ void setup() {
   display.clear();
 
   // Desenha o logotipo no centro do display
-  drawLogo();
+  while (1) {
+    drawLogo();
+  };
+  
 
   // Atualiza o display
   display.display();
@@ -48,7 +52,7 @@ void drawLogo() {
     int newTextX = centerX - (display.getStringWidth(logoText.substring(0, i)) / 2);
 
     // Desenha os caracteres já processados
-    display.drawString(newTextX, centerY, logoText.substring(0, i));
+    display.drawString(newTextX, centerY - 10, logoText.substring(0, i));
 
     // Atualiza o display
     display.display();
@@ -81,7 +85,7 @@ void drawLogo() {
     int newTextX2 = centerX - (display.getStringWidth(infoText.substring(0, i)) / 2);
 
     // Desenha os caracteres já processados
-    display.drawString(newTextX2, centerY + 20, infoText.substring(0, i));
+    display.drawString(newTextX2, centerY - 10, infoText.substring(0, i));
 
     // Atualiza o display
     display.display();
@@ -90,4 +94,3 @@ void drawLogo() {
     delay(100);
   }
 }
-
