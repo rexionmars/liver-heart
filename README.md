@@ -10,7 +10,7 @@ Email: francisco.vieira@somosicev.com
   <h1 align=center>AuRA AI-MED: Advancing Real-time Vital Signal Detection and Interpretation</h1>
   <p align=center>Real-time embedded software for optical character recognition (OCR) on hospital monitors and providing the data to an API.</p>
 </div>
-<img src="images/aura-aimed.jpg" alt="Snake logo">
+<img src="images/aura.jpg" alt="Snake logo">
 <!--
 ## OCR Basic Archtecture
 <img src="thumbnail-git/ocr.png" alt="Snake logo">
