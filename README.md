@@ -52,4 +52,4 @@ https://github.com/rexionmars/Live-Nurse-Docs
 
 -->
 
-# AuRA AI-MED is Closed
+# AuRA AI-MED projeto abandonado
