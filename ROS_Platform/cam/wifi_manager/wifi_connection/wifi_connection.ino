@@ -53,7 +53,14 @@ void setup() {
     WiFiManager wm;
     wm.setConfigPortalTimeout(180); // 3 minutos
 
-    int startY = 0; // Posição Y inicial para o texto
+    // Número de linhas de texto que serão exibidas
+    int totalLines = 4; // Ajuste esse número conforme o número de linhas de texto
+
+    int lineHeight = 8; // Altura de uma linha com setTextSize(1)
+    int totalTextHeight = lineHeight * totalLines; // Calcula a altura total do texto
+
+    // Calculando a posição vertical inicial para centralizar verticalmente
+    int startY = (SCREEN_HEIGHT - totalTextHeight) / 2;
 
     display.clearDisplay();
     display.setTextSize(1);
@@ -61,22 +68,22 @@ void setup() {
 
     if (WiFi.SSID() != "") {
         printCharByChar("Conectando a:", 100, startY);
-        printCharByChar(WiFi.SSID(), 100, startY + 10);
+        printCharByChar(WiFi.SSID(), 100, startY + lineHeight);
 
         if (wm.autoConnect()) {
-            printCharByChar("Wifi conectado", 100, startY + 20);
+            printCharByChar("Wifi conectado", 100, startY + 2 * lineHeight);
             Serial.println("Connected to WiFi");
         } else {
-            printCharByChar("Conexao falhou", 100, startY + 20);
+            printCharByChar("Conexao falhou", 100, startY + 2 * lineHeight);
             Serial.println("Failed to connect to WiFi");
         }
     } else {
         printCharByChar("Criando AP:", 100, startY);
-        printCharByChar("AuRA AI-MED", 100, startY + 10);
-        printCharByChar("Pass: auraneural", 100, startY + 20);
+        printCharByChar("AuRA AI-MED", 100, startY + lineHeight);
+        printCharByChar("Pass: auraneural", 100, startY + 2 * lineHeight);
 
         if (!wm.startConfigPortal("AuRA AI-MED", "auraneural")) {
-            printCharByChar("Config AP falhou", 100, startY + 30);
+            printCharByChar("Config AP falhou", 100, startY + 3 * lineHeight);
             Serial.println("Failed to start config portal");
         }
     }
