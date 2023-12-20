@@ -50,6 +50,6 @@ This software is in the early stages of development and currently does not have 
 https://github.com/rexionmars/Live-Nurse-Platform
 https://github.com/rexionmars/Live-Nurse-Docs
 
--->
 
 # AuRA AI-MED projeto abandonado
+-->
