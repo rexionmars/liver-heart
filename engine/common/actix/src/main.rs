@@ -1,3 +1,6 @@
+// AuRA
+// 2023 - Leonardi Melo
+
 use actix_web::{web, App, HttpResponse, HttpServer, Responder, Error};
 use std::sync::{Arc, Mutex};
 

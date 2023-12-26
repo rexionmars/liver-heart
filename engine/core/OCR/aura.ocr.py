@@ -1,5 +1,6 @@
 """
-This code as been formated using Black code style
+AuRA
+2023 - Leonardi Melo
 """
 import cv2
 import easyocr
