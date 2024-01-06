@@ -1,8 +1,11 @@
 """
 iCev Instituto de Ensino Superior
+
 email: joao_leonardi.melo@somoicev.com
 author: João Leonardi da Silva Melo
+
 Especial Thanks:
+Francisco Luciani de Miranda Vieira
 """
 import cv2
 import easyocr
@@ -38,9 +41,9 @@ class TextRecognition:
         This functions is called from start OCR engine.
         
         Args:
-            None
+            None.
         Returns:
-            None
+            None.
         """
         with concurrent.futures.ThreadPoolExecutor(max_workers=8) as executor:
             video_thread = executor.submit(self.video_processing_thread)
@@ -57,7 +60,7 @@ class TextRecognition:
         Args:
             frame (nd.array):
         Returns:
-            None
+            None.
         """
         if frame is None:
             return
@@ -116,18 +119,18 @@ class TextRecognition:
         # Your code to print ROI data goes here
         pass
 
-    def extract_label_and_value(self, text):
+    def extract_label_and_value(self, text: str):
         parts = re.split(r"(\d+)", text)
         label = parts[0].strip()
         value = parts[1].strip() if len(parts) > 1 else None
         return label, value
 
-    def video_processing_thread(self):
+    def video_processing_thread(self) -> None:
         while self.running:
             ret, frame = self.video_capture.read()
             self.read_text(frame)
 
-    def display_window(self):
+    def display_window(self) -> None:
         cv2.namedWindow("Text Recognition")
         cv2.setMouseCallback("Text Recognition", self.on_mouse_events)
 
@@ -186,7 +189,7 @@ class VideoCapture:
         self.cap.release()
 
 if __name__ == "__main__":
-    text_recognition = TextRecognition("http://192.168.0.38:81/stream")
+    text_recognition = TextRecognition("http://192.168.0.51:81/stream")
     #server = "https://liveheart-global-end-point.onrender.com/receive_data"
     #text_recognition = TextRecognition("http://192.168.0.38:81/stream", server_url=server) #OV2640
     text_recognition.start()
