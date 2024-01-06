@@ -9,6 +9,7 @@ tests/API/model.lvh
 tests/API/model.py
 tests/API/templates/index.html
 venv
+torch-test
 null
 .flake8
 .local.env
@@ -21,3 +22,6 @@ xresults
 ROS_Platform/cam/CameraWebServer/cmake-build-debug/*
 EASY/test.py
 experimental/beta/actix/target/*
+
+engine/web/node_modules
+engine/web/package-lock.json
