@@ -1,6 +1,7 @@
 // AuRA
 // 2023 - Leonardi Melo
 
+use actix_cors::Cors;
 use actix_web::{web, App, HttpResponse, HttpServer, Responder, Error};
 use std::sync::{Arc, Mutex};
 use serde::{Deserialize, Serialize};
@@ -88,7 +89,10 @@ async fn main() -> std::io::Result<()> {
     });
 
     HttpServer::new(move || {
+        let cors = Cors::permissive(); // Isso habilita o CORS para todas as origens. Para produção, restrinja as origens!
+
         App::new()
+            .wrap(cors)
             .app_data(app_state.clone())
             .service(web::resource("/receive_roi_data").route(web::post().to(receive_roi_data)))
             .service(web::resource("/get_roi_data").route(web::get().to(get_roi_data)))
