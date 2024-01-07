@@ -24,11 +24,17 @@ canvas.addEventListener('mousemove', e => {
 
 canvas.addEventListener('mouseup', e => {
   if (isDrawing === true) {
-    // Cria um novo objeto ROI com um ID único e adiciona-o à lista de ROIs
-    const newROI = { id: currentId++, x1: x, y1: y, x2: e.offsetX, y2: e.offsetY };
+    // Estrutura original que seu código espera
+    const newROI = {
+      id: currentId++,
+      x1: x,
+      y1: y,
+      x2: e.offsetX,
+      y2: e.offsetY
+    };
     rois.push(newROI);
     isDrawing = false;
-    drawAllROIs(); // Desenha todos os ROIs, incluindo o novo
+    drawAllROIs(); // Desenha todos os ROIs
   }
 });
 
@@ -88,3 +94,47 @@ function redrawROIs() {
   context.clearRect(0, 0, canvas.width, canvas.height);
   drawAllROIs();
 }
+
+
+function sendROIsToServer() {
+  const url = 'http://example.com/api/rois'; // Substitua pela URL do seu servidor
+
+  // Transforma os ROIs em um formato adequado para envio
+  const dataToSend = rois.map(roi => {
+    return {
+      id: roi.id,
+      coordinates: {
+        x1: roi.x1,
+        y1: roi.y1,
+        x2: roi.x2,
+        y2: roi.y2
+      }
+    };
+  });
+
+  // Serializa os dados para JSON
+  const data = JSON.stringify(dataToSend);
+
+  // Usa a API fetch para enviar os dados via POST
+  fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: data
+  })
+  .then(response => {
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    return response.json();
+  })
+  .then(data => {
+    console.log('Success:', data);
+  })
+  .catch((error) => {
+    console.error('Error:', error);
+  });
+}
+
+sendROIsToServer();
