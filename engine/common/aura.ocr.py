@@ -24,7 +24,7 @@ class TextRecognition:
     """
     This class provides commons functions for text recognition.
     """
-    def __init__(self, video_source: str, language="en"):
+    def __init__(self, video_source: str, server_url: str, language="en"):
         self.reader = easyocr.Reader([language])
         self.video_capture = VideoCapture(video_source)
         self.rois = []
@@ -34,7 +34,7 @@ class TextRecognition:
         self.running = True
         self.last_frame = None
         self.current_roi = None
-        #self.server_url = server_url
+        self.server_url = server_url
 
     def start(self):
         """
@@ -95,13 +95,13 @@ class TextRecognition:
             roi_data[f"ROI_ID {i}"] = roi_info
 
         print(json.dumps(roi_data, indent=4))
-        #response = requests.post(self.server_url, json=roi_data)
+        response = requests.post(self.server_url, json=roi_data)
 
-        #if response.status_code == 200:
-            ##print("Dados enviados com sucesso para o servidor.")
-            #pass
-        #else:
-            #print("Erro ao enviar os dados para o servidor. Código de status:", response.status_code)
+        if response.status_code == 200:
+            print("Dados enviados com sucesso para o servidor.")
+            pass
+        else:
+            print("Erro ao enviar os dados para o servidor. Código de status:", response.status_code)
 
         self.print_roi_data(roi_data)
 
@@ -189,9 +189,9 @@ class VideoCapture:
         self.cap.release()
 
 if __name__ == "__main__":
-    text_recognition = TextRecognition("http://192.168.0.51:81/stream")
-    #server = "https://liveheart-global-end-point.onrender.com/receive_data"
-    #text_recognition = TextRecognition("http://192.168.0.38:81/stream", server_url=server) #OV2640
+    #text_recognition = TextRecognition("http://192.168.0.51:81/stream")
+    server = "http://127.0.0.1:8080/receive_data"
+    text_recognition = TextRecognition("http://192.168.0.51:81/stream", server_url=server) #OV2640
     text_recognition.start()
     while text_recognition.running:
         pass  # Wait until the "q" or "ESC" key is pressed
