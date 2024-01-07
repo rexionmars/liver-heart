@@ -97,7 +97,7 @@ function redrawROIs() {
 
 
 function sendROIsToServer() {
-  const url = 'http://example.com/api/rois'; // Substitua pela URL do seu servidor
+  const url = 'http://127.0.0.1:8080/receive_roi_data'; // Substitua pela URL do seu servidor
 
   // Transforma os ROIs em um formato adequado para envio
   const dataToSend = rois.map(roi => {
@@ -127,7 +127,13 @@ function sendROIsToServer() {
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
-    return response.json();
+    // Verifica o tipo de conteúdo antes de decidir como processar a resposta
+    const contentType = response.headers.get('content-type');
+    if (contentType && contentType.includes('application/json')) {
+      return response.json();
+    } else {
+      return response.text();  // Trata como texto se não for JSON
+    }
   })
   .then(data => {
     console.log('Success:', data);
@@ -136,5 +142,6 @@ function sendROIsToServer() {
     console.error('Error:', error);
   });
 }
+
 
 sendROIsToServer();
