@@ -1,27 +1,10 @@
-media-test/*
-recognition-tests/config/__pycache__
-server/drogon-tests/build/
-__pycache__
-OCR/__pycache__
-tests/API/__pycache__
-tests/API/tmp
-tests/API/model.lvh
-tests/API/model.py
-tests/API/templates/index.html
 venv
-torch-test
-null
 .flake8
 .local.env
 *.out
 .vscode
-docs
-*.json
-detected_values.txt
-xresults
-ROS_Platform/cam/CameraWebServer/cmake-build-debug/*
-EASY/test.py
-experimental/beta/actix/target/*
 
+# AuRA Engine
+engine/backend/actix/target/*
 engine/web/node_modules
 engine/web/package-lock.json
