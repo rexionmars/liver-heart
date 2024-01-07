@@ -22,19 +22,20 @@ canvas.addEventListener('mousemove', e => {
   }
 });
 
+// Evento mouseup atualizado para usar as coordenadas atuais diretamente
 canvas.addEventListener('mouseup', e => {
   if (isDrawing === true) {
-    // Estrutura original que seu código espera
-    const newROI = {
-      id: currentId++,
-      x1: x,
-      y1: y,
-      x2: e.offsetX,
-      y2: e.offsetY
+    const roi = {
+      id: currentId++, // Incrementa o ID para cada novo ROI
+      x1: x, // Usa a variável 'x' que foi definida no evento mousedown
+      y1: y, // Usa a variável 'y' que foi definida no evento mousedown
+      x2: e.offsetX, // Usa as coordenadas do evento
+      y2: e.offsetY  // Usa as coordenadas do evento
     };
-    rois.push(newROI);
+    rois.push(roi); // Atualiza a lista de ROIs
     isDrawing = false;
     drawAllROIs(); // Desenha todos os ROIs
+    onROIDrawn(roi); // Chama a função para enviar o ROI ao servidor
   }
 });
 
@@ -59,6 +60,13 @@ function drawRectangle(x1, y1, x2, y2, isTemporary) {
   if (!isTemporary) {
     context.save();
   }
+}
+
+function onROIDrawn(roi) {
+  // Log da lista de ROIs para depuração
+  console.log('ROIs atuais:', rois);
+  // Envio do ROI ao servidor
+  sendROIToServer(roi); 
 }
 
 function drawAllROIs() {
@@ -96,26 +104,24 @@ function redrawROIs() {
 }
 
 
-function sendROIsToServer() {
-  const url = 'http://127.0.0.1:8080/receive_roi_data'; // Substitua pela URL do seu servidor
+function sendROIToServer(roi) {
+  const url = 'http://127.0.0.1:8080/receive_roi_data';
+  
+  // Cria um vetor com um único ROI
+  const dataToSend = [{
+    id: roi.id,
+    coordinates: {
+      x1: roi.x1,
+      y1: roi.y1,
+      x2: roi.x2,
+      y2: roi.y2
+    }
+  }];
 
-  // Transforma os ROIs em um formato adequado para envio
-  const dataToSend = rois.map(roi => {
-    return {
-      id: roi.id,
-      coordinates: {
-        x1: roi.x1,
-        y1: roi.y1,
-        x2: roi.x2,
-        y2: roi.y2
-      }
-    };
-  });
+  console.log('Printa Data:', JSON.stringify(dataToSend));
 
-  // Serializa os dados para JSON
   const data = JSON.stringify(dataToSend);
 
-  // Usa a API fetch para enviar os dados via POST
   fetch(url, {
     method: 'POST',
     headers: {
@@ -127,21 +133,30 @@ function sendROIsToServer() {
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
-    // Verifica o tipo de conteúdo antes de decidir como processar a resposta
-    const contentType = response.headers.get('content-type');
-    if (contentType && contentType.includes('application/json')) {
-      return response.json();
-    } else {
-      return response.text();  // Trata como texto se não for JSON
-    }
+    return response.text();
   })
-  .then(data => {
-    console.log('Success:', data);
+  .then(responseText => {
+    console.log('Resposta do servidor:', responseText);
   })
   .catch((error) => {
-    console.error('Error:', error);
+    console.error('Erro ao enviar ROI:', error);
   });
 }
 
 
-sendROIsToServer();
+// Agora você precisa garantir que a função onROIDrawn é chamada sempre que um ROI é desenhado
+// Por exemplo, dentro do seu evento mouseup após a criação do ROI:
+canvas.addEventListener('mouseup', e => {
+  if (isDrawing === true) {
+    const roi = {
+      id: generateUniqueID(), // Implemente uma função para gerar um ID único
+      x1: startPoint.x,
+      y1: startPoint.y,
+      x2: e.offsetX,
+      y2: e.offsetY
+    };
+    rois.push(roi);  // Atualiza a lista de ROIs (se ainda precisar dela para outros propósitos)
+    isDrawing = false;
+    onROIDrawn(roi);  // Chama a função para enviar o ROI ao servidor
+  }
+});
