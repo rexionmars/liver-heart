@@ -5,6 +5,7 @@ use actix_cors::Cors;
 use actix_web::{web, App, HttpResponse, HttpServer, Responder, Error};
 use std::sync::{Arc, Mutex};
 use serde::{Deserialize, Serialize};
+use log::{info, warn};
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 struct ROI {
@@ -28,18 +29,42 @@ struct AppState {
 // ROIS
 async fn receive_roi_data(data: web::Json<Vec<ROI>>, app_state: web::Data<AppState>) -> impl Responder {
     let mut received_data = app_state.received_data.lock().unwrap();
-    *received_data = Some(data.0.clone());
+    
+    if let Some(ref mut rois) = *received_data {
+        // Se já existem ROIs, os adiciona à lista existente.
+        rois.extend(data.0.clone());
+    } else {
+        // Se ainda não existem ROIs, cria uma nova lista.
+        *received_data = Some(data.0.clone());
+    }
 
     HttpResponse::Ok().body("Dados dos ROIs recebidos com sucesso!")
 }
+
 
 // Adiciona uma rota para enviar os dados dos ROIs
 async fn get_roi_data(app_state: web::Data<AppState>) -> Result<HttpResponse, Error> {
     let received_data = app_state.received_data.lock().unwrap();
 
     match &*received_data {
-        Some(data) => {
-            let json_string = serde_json::to_string(data).unwrap();
+        Some(rois) => {
+            // Cria um mapa onde as chaves são os IDs dos ROIs e os valores são as coordenadas
+            let roi_map: serde_json::Map<String, serde_json::Value> = rois
+                .iter()
+                .map(|roi| {
+                    (
+                        format!("roiID{}", roi.id), // Cria a chave usando o ID do ROI
+                        serde_json::json!({
+                            "x1": roi.coordinates.x1,
+                            "y1": roi.coordinates.y1,
+                            "x2": roi.coordinates.x2,
+                            "y2": roi.coordinates.y2,
+                        }), // Cria o valor com as coordenadas
+                    )
+                })
+                .collect();
+
+            let json_string = serde_json::to_string(&roi_map).unwrap();
             Ok(HttpResponse::Ok()
                 .content_type("application/json")
                 .body(json_string))
@@ -49,6 +74,7 @@ async fn get_roi_data(app_state: web::Data<AppState>) -> Result<HttpResponse, Er
         }
     }
 }
+
 
 
 async fn receive_data(data: web::Json<Vec<ROI>>, app_state: web::Data<AppState>) -> impl Responder {
@@ -84,6 +110,8 @@ async fn get_received_data(app_state: web::Data<AppState>) -> Result<HttpRespons
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
+    env_logger::init();
+
     let app_state = web::Data::new(AppState {
         received_data: Arc::new(Mutex::new(None)),
     });
