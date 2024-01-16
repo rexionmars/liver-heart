@@ -47,6 +47,12 @@ document.addEventListener('keydown', e => {
   }
 });
 
+document.getElementById('stopButton').addEventListener('click', function() {
+  const streamingImage = document.getElementById('streamingImage');
+  streamingImage.src = ''; // Remove a fonte da imagem para parar a captura
+});
+
+
 function drawRectangle(x1, y1, x2, y2, isTemporary) {
   if (isTemporary) {
     context.clearRect(0, 0, canvas.width, canvas.height);
