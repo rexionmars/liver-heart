@@ -1,0 +1,30 @@
+[15-01-2024: 23:58]
+
+Traceback (most recent call last):
+  File "/home/dracut/workspace/iCev/AuRA.AI-MED/engine/common/test.py", line 116, in <module>
+    text_recognition.start()
+  File "/home/dracut/workspace/iCev/AuRA.AI-MED/engine/common/test.py", line 21, in start
+    video_thread.result()
+  File "/usr/lib64/python3.11/concurrent/futures/_base.py", line 456, in result
+    return self.__get_result()
+           ^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib64/python3.11/concurrent/futures/_base.py", line 401, in __get_result
+    raise self._exception
+  File "/usr/lib64/python3.11/concurrent/futures/thread.py", line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dracut/workspace/iCev/AuRA.AI-MED/engine/common/test.py", line 93, in video_processing_thread
+    self.read_text(frame)
+  File "/home/dracut/workspace/iCev/AuRA.AI-MED/engine/common/test.py", line 49, in read_text
+    cv2.rectangle(frame, (text_x, text_y), (x + bbox[2][0], y + bbox[2][1]), (0, 255, 0), 1)
+cv2.error: OpenCV(4.9.0) :-1: error: (-5:Bad argument) in function 'rectangle'
+> Overload resolution failed:
+>  - Can't parse 'pt1'. Sequence item with index 0 has a wrong type
+>  - Can't parse 'pt1'. Sequence item with index 0 has a wrong type
+>  - Can't parse 'rec'. Expected sequence length 4, got 2
+>  - Can't parse 'rec'. Expected sequence length 4, got 2
+
+Descrição: Aparentemente isso é causado quando apontamos a cêmera para a tela onde estão os dados
+           que queremos interpretar.
+
+=============================================================================================================
