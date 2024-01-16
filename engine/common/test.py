@@ -29,7 +29,7 @@ class TextRecognition:
         roi_data = {}
         for i, roi in enumerate(rois):
             x, y, w, h = roi
-            cropped_frame = frame[int(y):int(h), int(x):int(w)]
+            cropped_frame = frame[int(y):int(y + h), int(x):int(x + w)]
 
             results = self.reader.readtext(cropped_frame)
 
@@ -46,8 +46,8 @@ class TextRecognition:
 
                 text_x = x + bbox[0][0]
                 text_y = y + bbox[0][1]
-                cv2.rectangle(frame, (text_x, text_y), (x + bbox[2][0], y + bbox[2][1]), (0, 255, 0), 1)
-                cv2.putText(frame, text, (text_x, text_y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1)
+                cv2.rectangle(frame, (int(text_x), int(text_y)), (int(x + bbox[2][0]), int(y + bbox[2][1])), (0, 255, 0), 1)
+                cv2.putText(frame, text, (int(text_x), int(text_y) - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1)
 
             filtered_values = [item for item in list_value if item is not None]
             filtered_values = [float(item) for item in filtered_values]
@@ -58,6 +58,7 @@ class TextRecognition:
             roi_data[f"ROI_ID {i}"] = roi_info
 
         print(json.dumps(roi_data, indent=4))
+
 
     def fetch_rois_from_server(self, url):
         try:
@@ -75,8 +76,7 @@ class TextRecognition:
     def draw_rois_on_frame(self, frame, rois):
         for roi in rois:
             x, y, w, h = roi
-            #cv2.rectangle(frame, (int(x), int(y)), (int(w), int(h)), (0, 255, 0), 2)
-            cv2.rectangle(frame, (int(text_x), int(text_y)), (int(x + bbox[2][0]), int(y + bbox[2][1])), (0, 255, 0), 1)
+            cv2.rectangle(frame, (int(x), int(y)), (int(w), int(h)), (0, 255, 0), 1)
 
 
     def print_roi_data(self, roi_data):
