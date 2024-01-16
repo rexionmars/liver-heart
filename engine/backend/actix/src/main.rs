@@ -5,7 +5,6 @@ use actix_cors::Cors;
 use actix_web::{web, App, HttpResponse, HttpServer, Responder, Error};
 use std::sync::{Arc, Mutex};
 use serde::{Deserialize, Serialize};
-use log::{info, warn};
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 struct ROI {
