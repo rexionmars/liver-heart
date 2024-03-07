@@ -18,7 +18,7 @@ def fetch_rois_from_server(url):
 def draw_rois_on_frame(frame, rois):
     for roi in rois:
         x, y, w, h = roi
-        cv2.rectangle(frame, (int(x), int(y)), (int(w), int(h)), (0, 255, 0), 2)
+        cv2.rectangle(frame, (int(x), int(y)), (int(w), int(h)), (0, 255, 0), 1)
 
 
 

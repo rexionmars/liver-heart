@@ -36,6 +36,7 @@ class TextRecognition:
             roi_info = {}
             list_value = []
 
+            # TODO: print ditc os results
             for bbox, text, prob in results:
                 label, value = self.extract_label_and_value(text)
                 list_value.append(value)
@@ -48,6 +49,7 @@ class TextRecognition:
                 text_y = y + bbox[0][1]
                 cv2.rectangle(frame, (int(text_x), int(text_y)), (int(x + bbox[2][0]), int(y + bbox[2][1])), (0, 255, 0), 1)
                 cv2.putText(frame, text, (int(text_x), int(text_y) - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1)
+                #cv2.putText(frame, prob, (0, 40), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1)
 
             filtered_values = [item for item in list_value if item is not None]
             filtered_values = [float(item) for item in filtered_values]

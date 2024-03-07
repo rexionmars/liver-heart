@@ -5,8 +5,10 @@ email: joao_leonardi.melo@somoicev.com
 author: João Leonardi da Silva Melo
 
 Especial Thanks:
-Francisco Luciani de Miranda Vieira
+Francisco Lucciani de Miranda Vieira
 """
+from __future__ import annotations
+
 import cv2
 import easyocr
 import json
@@ -24,6 +26,7 @@ class TextRecognition:
     """
     This class provides commons functions for text recognition.
     """
+
     def __init__(self, video_source: str, server_url: str, language="en"):
         self.reader = easyocr.Reader([language])
         self.video_capture = VideoCapture(video_source)
@@ -38,12 +41,10 @@ class TextRecognition:
 
     def start(self):
         """
-        This functions is called from start OCR engine.
-        
-        Args:
-            None.
-        Returns:
-            None.
+        Starts the OCR engine by executing video processing and handling user input concurrently.
+
+        This method uses a ThreadPoolExecutor to execute the video processing thread and the user
+        input thread concurrently. It also displays the window for the OCR engine.
         """
         with concurrent.futures.ThreadPoolExecutor(max_workers=8) as executor:
             video_thread = executor.submit(self.video_processing_thread)
@@ -51,7 +52,6 @@ class TextRecognition:
             self.display_window()
             video_thread.result()
             user_input_thread.result()
-
 
     def read_text(self, frame):
         """
@@ -83,8 +83,10 @@ class TextRecognition:
 
                 text_x = x + bbox[0][0]
                 text_y = y + bbox[0][1]
-                cv2.rectangle(frame, (text_x, text_y), (x + bbox[2][0], y + bbox[2][1]), (0, 255, 0), 1)
-                cv2.putText(frame, text, (text_x, text_y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1)
+                cv2.rectangle(frame, (text_x, text_y), (x + bbox[2][0], y + bbox[2][1]),
+                              (0, 255, 0), 1)
+                cv2.putText(frame, text, (text_x, text_y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5,
+                            (0, 255, 0), 1)
 
             filtered_values = [item for item in list_value if item is not None]
             filtered_values = [float(item) for item in filtered_values]
@@ -101,7 +103,8 @@ class TextRecognition:
             print("Dados enviados com sucesso para o servidor.")
             pass
         else:
-            print("Erro ao enviar os dados para o servidor. Código de status:", response.status_code)
+            print("Erro ao enviar os dados para o servidor. Código de status:",
+                  response.status_code)
 
         self.print_roi_data(roi_data)
 
@@ -176,7 +179,9 @@ class TextRecognition:
             elif key == ord("u"):
                 self.undo_roi_deletion()
 
+
 class VideoCapture:
+
     def __init__(self, source):
         self.cap = cv2.VideoCapture(source)
         self.width = int(self.cap.get(cv2.CAP_PROP_FRAME_WIDTH))
@@ -188,10 +193,11 @@ class VideoCapture:
     def release(self):
         self.cap.release()
 
+
 if __name__ == "__main__":
     #text_recognition = TextRecognition("http://192.168.0.51:81/stream")
     server = "http://127.0.0.1:8080/receive_data"
-    text_recognition = TextRecognition("http://192.168.0.51:81/stream", server_url=server) #OV2640
+    text_recognition = TextRecognition("http://192.168.0.51:81/stream", server_url=server)  #OV2640
     text_recognition.start()
     while text_recognition.running:
         pass  # Wait until the "q" or "ESC" key is pressed
