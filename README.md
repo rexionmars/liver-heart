@@ -3,35 +3,15 @@ Peoples:
 Name: João Leonardi da Silva Melo
 Email: joao_leonardi.melo@somosicev.com
 
-```
-<!--
 Teacher: Francisco Luciani de Miranda Vieira
 Email: francisco.vieira@somosicev.com
-
-<div align=center>
-  <h1 align=center>AuRA AI-MED: Advancing Real-time Vital Signal Detection and Interpretation</h1>
-  <p align=center>Real-time embedded software for optical character recognition (OCR) on hospital monitors and providing the data to an API.</p>
-</div>
-<img src="images/aura_v2.jpg" alt="Snake logo">
-<!--
-## OCR Basic Archtecture
-<img src="thumbnail-git/ocr.png" alt="Snake logo">
-
-## Basic Multithread Archtecture
-<img src="images/arch.png" alt="Snake logo">
-
-## Basic Archtecture API
-<img src="images/api.png" alt="Snake logo">
-This software is in the early stages of development and currently does not have any documentation or demonstration of its usage. Please stay tuned for more information as the project progresses.
+```
 
 
-## Keras OCR
-<br>Check the results at: https://github.com/rexionmars/liver-heart/tree/master/xresults
+## AuRA AI-MED: Advancing Real-time Vital Signal Detection and Interpretation
+Real-time embedded software for optical character recognition (OCR) on hospital monitors and providing the data to an API.
 
-<img src="images/keras.jpg" alt="Snake logo">
-
-## Embedded Platform
-<img src="images/platform.png" alt="Snake logo">
+<img src="docs/images/logo/aura_v2.jpg" alt="Snake logo">
 
 
 ## Main characteristics 🔍
@@ -46,11 +26,3 @@ This software is in the early stages of development and currently does not have 
 - [x] ARM Cortex
 - [x] Espressif
 
-
-## Extended Repos
-https://github.com/rexionmars/Live-Nurse-Platform
-https://github.com/rexionmars/Live-Nurse-Docs
-
-
-# AuRA AI-MED projeto abandonado
--->
