@@ -24,8 +24,8 @@ SSD1306 display(0x3c, 14, 15);  // SDA, SCL;
 // ===========================
 // Enter your WiFi credentials
 // ===========================
-const char* ssid = "PROFESSORES - CEV";
-const char* password = "osmelhores";
+const char* ssid = "SIMONE";
+const char* password = "20031985";
 
 void startCameraServer();
 void setupLedFlash(int pin);
